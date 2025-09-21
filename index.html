@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quadro Branco — Entregas (Elétrica / Hidráulica)</title>
-  <meta name="description" content="TV-ready. Dois quadros separados: Equipe Elétrica e Equipe Hidráulica. Cada quadro tem 2 blocos lado a lado. Clique alterna status, chamados por apto, exportar JSON. Logo fixa. Sem import: atualização via GitHub." />
+  <meta name="description" content="TV-ready. Dois quadros: Equipe Elétrica e Equipe Hidráulica. Clique alterna status, chamados por apto, exportar JSON. Logo fixa. Sem import (atualização via GitHub). Versão com limpeza automática de cache/localStorage (BUILD_HASH)." />
   <style>
     :root{
       --bg:#ffffff; --text:#0f172a; --muted:#475569; --line:#e2e8f0; --head:#f8fafc;
@@ -60,7 +60,7 @@
     .tickets h3{margin:0 0 8px 0;font-size:14px;color:var(--muted)}
     .ticket{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0;background:var(--head)}
     .tid{font-weight:800;color:#0f172a;background:#fff;border:1px solid var(--line);border-radius:8px;padding:2px 6px}
-    .tmeta{font-size:12px;color:var(--muted)}
+    .tmeta{font-size:12px;color:#64748b}
     .ttext{flex:1}
     .ticket button{background:transparent;border:1px solid var(--line);color:#ef4444;border-radius:8px;padding:4px 6px;font-weight:800}
 
@@ -81,7 +81,7 @@
 <body>
   <header>
     <div class="brand">
-      <img alt="Logo" src="Assets/logo.jpg" onerror="this.style.display='none'"/>
+      <img alt="Logo" src="Assets/logo.jpg?v=2025-09-21-01" onerror="this.style.display='none'"/>
       <h1>Quadro Branco — Entregas por Cores</h1>
     </div>
     <div class="seg" role="tablist" aria-label="Selecionar quadro">
@@ -109,6 +109,19 @@
   </footer>
 
   <script>
+    // ===== Versão/Cache Bust =====
+    const BUILD_HASH = '2025-09-21-02'; // altere em cada publicação
+    const STORAGE_KEY = 'quadro_entregas_v3';
+
+    try {
+      const metaKey = STORAGE_KEY + ':meta';
+      const meta = JSON.parse(localStorage.getItem(metaKey) || '{}');
+      if (meta.buildHash !== BUILD_HASH) {
+        localStorage.removeItem(STORAGE_KEY); // limpa dados antigos
+        localStorage.setItem(metaKey, JSON.stringify({ buildHash: BUILD_HASH }));
+      }
+    } catch (_) {}
+
     // ===== Config =====
     const PAV = 21;         // 21º com 2 coberturas
     const APT = 4;          // Máx. por pavimento
@@ -165,16 +178,16 @@
       return out;
     }
 
-    // Estado
+    // Estado (usa STORAGE_KEY v3)
     let state = JSON.parse(JSON.stringify(DEFAULTS));
-    try{ const raw = localStorage.getItem('quadro_entregas_v2'); if(raw) state = normalize(JSON.parse(raw)); }catch(_){ state = JSON.parse(JSON.stringify(DEFAULTS)); }
+    try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw) state = normalize(JSON.parse(raw)); }catch(_){ state = JSON.parse(JSON.stringify(DEFAULTS)); }
 
     // Helpers DOM
     const wrap = document.getElementById('wrap');
     const tabEle = document.getElementById('tabEle');
     const tabHid = document.getElementById('tabHid');
 
-    function save(){ try{ localStorage.setItem('quadro_entregas_v2', JSON.stringify(state)); }catch(_){ /* ignore */ } }
+    function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(_){ /* ignore */ } }
     function chip(t){ return `<span class=\"chip\">${t}</span>` }
     function head(t){ const d=document.createElement('div'); d.className='head cell'; d.textContent=t; return d; }
 
@@ -280,7 +293,7 @@
       box.innerHTML = `<h4>Legenda de chamados — ${state.quadros[state.current].nome}</h4><ul>${itens}</ul>`;
     }
 
-    function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m])); }
+    function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m=> ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'':'&#39;'}[m])); }
 
     // ===== Botões =====
     document.getElementById('btnExport').addEventListener('click', ()=>{
@@ -336,6 +349,7 @@
   </script>
 </body>
 </html>
+
 
 
 
