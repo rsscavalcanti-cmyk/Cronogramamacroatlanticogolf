@@ -1,5 +1,5 @@
 {
-  "current": "hidraulica",
+  "current": "eletrica",
   "quadros": {
     "eletrica": {
       "nome": "Equipe Elétrica",
@@ -102,34 +102,34 @@
             "nv"
           ],
           [
-            "nv",
-            "nv",
-            "nv",
-            "nv"
+            "pl",
+            "pl",
+            "pl",
+            "ok"
           ],
           [
-            "nv",
-            "nv",
-            "nv",
-            "nv"
+            "ok",
+            "ok",
+            "ok",
+            "ok"
           ],
           [
-            "nv",
-            "nv",
-            "nv",
-            "nv"
+            "ok",
+            "ok",
+            "ok",
+            "ok"
           ],
           [
-            "nv",
-            "nv",
-            "nv",
-            "nv"
+            "ok",
+            "ok",
+            "ok",
+            "ok"
           ],
           [
-            "nv",
-            "nv",
-            "nv",
-            "nv"
+            "ok",
+            "ok",
+            "ok",
+            "ok"
           ]
         ],
         "Bloco 2": [
@@ -201,7 +201,31 @@
           ],
           [
             "nv",
+            "ok",
+            "ok",
+            "nv"
+          ],
+          [
+            "pl",
+            "pl",
             "nv",
+            "nv"
+          ],
+          [
+            "ok",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "ok",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "ok",
             "nv",
             "nv"
           ],
@@ -212,32 +236,8 @@
             "nv"
           ],
           [
-            "nv",
-            "nv",
-            "nv",
-            "nv"
-          ],
-          [
-            "nv",
-            "nv",
-            "nv",
-            "nv"
-          ],
-          [
-            "nv",
-            "nv",
-            "nv",
-            "nv"
-          ],
-          [
-            "nv",
-            "nv",
-            "nv",
-            "nv"
-          ],
-          [
-            "nv",
-            "nv",
+            "ok",
+            "ok",
             "nv",
             "nv"
           ],
@@ -261,7 +261,15 @@
           ]
         ]
       },
-      "chamados": []
+      "chamados": [
+        {
+          "id": "101",
+          "bloco": "Bloco 1",
+          "pavIndex": 1,
+          "aptIndex": 1,
+          "texto": "vazamento"
+        }
+      ]
     },
     "hidraulica": {
       "nome": "Equipe Hidráulica",
@@ -382,16 +390,16 @@
             "nv"
           ],
           [
-            "pl",
-            "pl",
-            "ok",
-            "ok"
+            "nv",
+            "nv",
+            "nv",
+            "nv"
           ],
           [
-            "pm",
-            "ok",
-            "ok",
-            "ok"
+            "nv",
+            "nv",
+            "nv",
+            "nv"
           ]
         ],
         "Bloco 2": [
@@ -511,20 +519,20 @@
           ],
           [
             "nv",
-            "ok",
-            "ok",
-            "ok"
+            "nv",
+            "nv",
+            "nv"
           ],
           [
-            "ok",
-            "ok",
-            "ok",
-            "ok"
+            "nv",
+            "nv",
+            "nv",
+            "nv"
           ]
         ]
       },
       "chamados": []
     }
   }
-            }
+}
 
