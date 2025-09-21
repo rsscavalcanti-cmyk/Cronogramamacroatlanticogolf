@@ -93,21 +93,248 @@
     <div class="legendTickets" id="legendTickets"></div>
   </footer>
 
-  <!--
-    ⚡ ESQUEMA v4 — histórico vivo por eventos
-    bundle = {
-      schema:"v4", version: 1,
-      meta: { createdAt, updatedAt, author },
-      snapshot: { current, quadros: { eletrica: {...}, hidraulica: {...} } },
-      history: [ { id, ts, who, type, data }, ... ]
-    }
-    Tipos de evento:
-      - setStatus { quadro, bloco, pavIndex, aptIndex, to }
-      - addChamado { quadro, chamado:{id, bloco, pavIndex, aptIndex, texto} }
-      - delChamado { quadro, id }
-    👉 Para atualizar: substitua o conteúdo do <script id="DATA_JSON"> por um JSON novo (sempre mantendo o array history acumulado).
-  -->
-  <script id="DATA_JSON" type="application/json">{"schema":"v4","version":1,"meta":{"createdAt":null,"updatedAt":null,"author":""},"snapshot":{"current":"eletrica","quadros":{"eletrica":{"nome":"Equipe Elétrica","blocos":{"Bloco 1":[],"Bloco 2":[]},"chamados":[]},"hidraulica":{"nome":"Equipe Hidráulica","blocos":{"Bloco 1":[],"Bloco 2":[]},"chamados":[]}}},"history":[],"__embedded":true}</script>
+  <!-- Atualização 21/09: Bloco 2 elétrica (101 OK, 102 pendência com roubo, 103 parcial 50%); Hidráulica: OK até pav 5 e PM nos pavs 6-7 em ambos blocos. -->
+  <script id="DATA_JSON" type="application/json">{
+    "schema":"v4","version":1,
+    "meta":{"createdAt":"2025-09-21T00:00:00.000Z","updatedAt":"2025-09-21T00:00:00.000Z","author":"Renato/IA"},
+    "snapshot":{"current":"eletrica","quadros":{"eletrica":{"nome":"Equipe Elétrica","blocos":{"Bloco 1":[],"Bloco 2":[]},"chamados":[]},"hidraulica":{"nome":"Equipe Hidráulica","blocos":{"Bloco 1":[],"Bloco 2":[]},"chamados":[]}}},
+    "history":[
+      {"id":"EV-EL-B2-101","ts":"2025-09-21T00:00:01.000Z","who":"Renato/IA","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-EL-B2-102","ts":"2025-09-21T00:00:02.000Z","who":"Renato/IA","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":1,"to":"pm"}},
+      {"id":"EV-EL-B2-102-CH","ts":"2025-09-21T00:00:03.000Z","who":"Renato/IA","type":"addChamado","data":{"quadro":"eletrica","chamado":{"id":"CH-102-EL","bloco":"Bloco 2","pavIndex":20,"aptIndex":1,"texto":"Pendente — roubo de cabos"}}},
+      {"id":"EV-EL-B2-103","ts":"2025-09-21T00:00:04.000Z","who":"Renato/IA","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":2,"to":"pm"}},
+      {"id":"EV-EL-B2-103-CH","ts":"2025-09-21T00:00:05.000Z","who":"Renato/IA","type":"addChamado","data":{"quadro":"eletrica","chamado":{"id":"CH-103-EL","bloco":"Bloco 2","pavIndex":20,"aptIndex":2,"texto":"Entrega parcial — 50%"}}},
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      {"id":"_end","ts":"2025-09-21T00:10:00.000Z","who":"Renato/IA","type":"noop","data":{}}
+    ],
+    "__embedded":true
+  }</script>
   <script>
     // ---- Config estática (somente visualização) ----
     const PAV=21, APT=4, LABEL={nv:"NV",ok:"OK",pl:"PL",pm:"PM",nc:"NC",xx:"--"};
@@ -117,7 +344,6 @@
     const byId = id=>document.getElementById(id);
     function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m])); }
 
-    // ---- Carrega e normaliza o bundle embutido ----
     function defaultBundle(){
       return {
         schema:'v4', version:1,
@@ -162,9 +388,6 @@
         } else if(type==='addChamado'){
           const { quadro, chamado } = data||{}; const q=s.quadros[quadro];
           if(q && chamado && chamado.id){ if(!q.chamados.some(c=>c.id===chamado.id)){ q.chamados.push(chamado); } }
-        } else if(type==='delChamado'){
-          const { quadro, id } = data||{}; const q=s.quadros[quadro];
-          if(q){ q.chamados = (q.chamados||[]).filter(c=>c.id!==id); }
         }
       });
       return s;
@@ -185,14 +408,12 @@
       }catch(_){ return base; }
     }
 
-    // ---- Render (somente leitura) ----
     function chip(t){return `<span class="chip">${t}</span>`}
     function head(t){const d=document.createElement('div'); d.className='head cell'; d.textContent=t; return d;}
     function count(m){const r={ok:0,pl:0,pm:0,nc:0,nv:0}; (m||[]).flat().forEach(s=>{if(r[s]!=null) r[s]++;}); return r;}
 
     function render(){
       const wrap = byId('wrap');
-      // Limpa tudo menos os títulos de seção e o aside
       wrap.querySelectorAll('.card').forEach(el=>el.remove());
 
       const dataTag=document.getElementById('DATA_JSON');
@@ -209,14 +430,14 @@
           card.appendChild(kpi);
           const grid=document.createElement('div'); grid.className='grid';
           grid.appendChild(head('Pav'));
-          for(let a=1;a<=APT;a++) grid.appendChild(head(String(a).padStart(2,'0')));
-          for(let i=0;i<PAV;i++){
-            const pav=(PAV-i).toString().padStart(2,'0');
+          for(let a=1;a<=4;a++) grid.appendChild(head(String(a).padStart(2,'0')));
+          for(let i=0;i<21;i++){
+            const pav=(21-i).toString().padStart(2,'0');
             grid.appendChild(head(pav));
-            const valid=aptosNoPav(i);
-            for(let a=0;a<APT;a++){
+            const valid=((21-i)===21?2:4);
+            for(let a=0;a<4;a++){
               const st=matriz[i][a];
-              const num=aptNumber(PAV-i,a);
+              const num=`${21-i}${(a+1).toString().padStart(2,'0')}`;
               const disabled=(a>=valid)||st==='xx';
               const d=document.createElement('div');
               d.className=`cell apto ${disabled?'disabled':st}`;
@@ -233,13 +454,11 @@
           if(!lista.length){ const emp=document.createElement('div'); emp.className='tmeta'; emp.textContent='Sem chamados.'; tks.appendChild(emp);} else {
             lista.sort((a,b)=>a.id.localeCompare(b.id)).forEach(ch=>{
               const item=document.createElement('div'); item.className='ticket';
-              const pav=(PAV-ch.pavIndex).toString().padStart(2,'0'); const num=aptNumber(PAV-ch.pavIndex,ch.aptIndex);
+              const pav=(21-ch.pavIndex).toString().padStart(2,'0'); const num=`${21-ch.pavIndex}${(ch.aptIndex+1).toString().padStart(2,'0')}`;
               item.innerHTML=`<span class="tid">${escapeHTML(ch.id)}</span><div class="ttext"><div><strong>Apto ${num}</strong> — ${escapeHTML(ch.texto||'')}</div><div class="tmeta">Pav ${pav} • Coluna ${(ch.aptIndex+1).toString().padStart(2,'0')}</div></div>`;
               tks.appendChild(item);
             });
           }
-          card.appendChild(tks);
-          // Insere no grid: elétrica antes dos marcadores de seção, hidráulica depois
           const marker = quadroKey==='eletrica'
             ? wrap.querySelector('.sectionTitle:nth-of-type(1)')
             : wrap.querySelector('.sectionTitle:nth-of-type(2)');
@@ -250,14 +469,13 @@
       renderQuadro('eletrica');
       renderQuadro('hidraulica');
 
-      // Legenda geral de chamados (por quadro atual não faz sentido aqui, mostra todos)
       const box=byId('legendTickets');
       const allChamados=[...bundle.snapshot.quadros.eletrica.chamados, ...bundle.snapshot.quadros.hidraulica.chamados];
       if(!allChamados.length){ box.innerHTML=''; }
       else{
         const itens=allChamados.slice().sort((a,b)=>a.id.localeCompare(b.id)).map(ch=>{
-          const num=aptNumber(PAV-ch.pavIndex,ch.aptIndex);
-          return `<li><strong>${escapeHTML(ch.id)}</strong>: ${escapeHTML(ch.texto||'')} <span style="color:#64748b">(${escapeHTML(ch.bloco)} • Apto ${num})</span></li>`;
+          const num=`${21-ch.pavIndex}${(ch.aptIndex+1).toString().padStart(2,'0')}`;
+          return `<li><strong>${escapeHTML(ch.id)}</strong>: ${escapeHTML(ch.texto||'')} <span style=\"color:#64748b\">(${escapeHTML(ch.bloco)} • Apto ${num})</span></li>`;
         }).join('');
         box.innerHTML=`<h4>Legenda de chamados — Geral</h4><ul>${itens}</ul>`;
       }
