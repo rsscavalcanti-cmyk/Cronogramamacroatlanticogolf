@@ -1,55 +1,49 @@
 <!DOCTYPE html>
-<html lang="pt-BR"><head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Quadro Branco — Entregas (Elétrica / Hidráulica)</title>
-  <meta name="description" content="TV-ready. Dois quadros: Equipe Elétrica e Equipe Hidráulica. Clique alterna status, chamados por apto. Exporta JSON e também COPIA O HTML COMPLETO com os dados embutidos. Logo fixa. Sem import (atualização via GitHub).">
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quadro Branco — Entregas v4 (histórico vivo)</title>
+  <meta name="description" content="Controle de obra com histórico vivo por eventos. Importa/mescla JSON, exporta JSON e HTML completo com dados embutidos. Dois quadros: Elétrica e Hidráulica." />
   <style>
     :root{
       --bg:#ffffff; --text:#0f172a; --muted:#475569; --line:#e2e8f0; --head:#f8fafc;
       --ok:#16a34a; --pl:#eab308; --pm:#f97316; --nc:#ef4444; --nv:#cbd5e1; --btn:#0ea5e9;
       --badge:#ffffff; --badgeText:#0f172a; --segBg:#e6f4ff; --segBorder:#b6e0ff; --segText:#075985;
+      --danger:#ef4444; --safe:#16a34a
     }
     *{box-sizing:border-box}
     html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font:16px/1.35 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
     header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 16px;border-bottom:2px solid var(--line);position:sticky;top:0;background:var(--bg);z-index:10}
     .brand{display:flex;align-items:center;gap:10px;min-width:0}
     .brand img{height:36px;width:auto;object-fit:contain}
-    .brand h1{margin:0;font-size:22px;font-weight:800;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-
+    .brand h1{margin:0;font-size:20px;font-weight:800;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .seg{display:flex;border:2px solid var(--segBorder);border-radius:12px;overflow:hidden}
     .seg button{appearance:none;border:0;background:transparent;padding:8px 12px;font-weight:700;color:var(--segText);cursor:pointer}
     .seg button.active{background:var(--segBg)}
-
     .tools{display:flex;gap:8px;flex-wrap:wrap}
     button{appearance:none;border:none;background:var(--btn);color:#07263a;padding:8px 10px;border-radius:10px;font-weight:700;cursor:pointer}
     .ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}
-
+    .danger{background:transparent;border:1px solid var(--danger);color:var(--danger)}
     .wrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:18px}
     .card{border:2px solid var(--line);border-radius:18px;padding:14px}
     .card h2{margin:0 0 8px 0;font-size:18px}
-
     .kpi{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px 0}
     .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);padding:6px 10px;border-radius:999px;font-size:14px;color:var(--muted);background:var(--head)}
-
-    .grid{display:grid;grid-template-columns:76px repeat(4, 1fr);gap:8px}
+    .grid{display:grid;grid-template-columns:76px repeat(4,1fr);gap:8px}
     .cell,.head{border:1px solid var(--line);border-radius:12px;padding:0;text-align:center}
     .head{background:var(--head);font-weight:700;padding:10px}
-
     .apto{position:relative;height:48px;display:flex;align-items:center;justify-content:center;font-weight:800;border-width:2px;cursor:pointer;user-select:none;transition:transform .06s ease}
     .apto:active{transform:scale(.98)}
     .apto .label{font-size:14px;background:rgba(255,255,255,.85);padding:2px 6px;border-radius:8px;mix-blend-mode:screen}
     .badge{position:absolute;top:6px;right:6px;background:var(--badge);color:var(--badgeText);border:1px solid var(--line);border-radius:10px;font-size:11px;padding:1px 6px;font-weight:800}
-
     .apto.nv{background:var(--nv);color:#0f172a}
     .apto.ok{background:var(--ok);color:#0b1610}
     .apto.pl{background:var(--pl);color:#3a2c07}
     .apto.pm{background:var(--pm);color:#fff}
     .apto.nc{background:var(--nc);color:#fff}
-
     .apto.disabled{background:transparent;border:1px dashed var(--line);color:var(--muted);cursor:default}
     .apto.disabled .label{background:transparent}
-
     .tickets{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
     .tickets h3{margin:0 0 8px 0;font-size:14px;color:var(--muted)}
     .ticket{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0;background:var(--head)}
@@ -57,7 +51,6 @@
     .tmeta{font-size:12px;color:#64748b}
     .ttext{flex:1}
     .ticket button{background:transparent;border:1px solid var(--line);color:#ef4444;border-radius:8px;padding:4px 6px;font-weight:800}
-
     footer{border-top:2px solid var(--line);padding:8px 14px 60px 14px;color:var(--muted);font-size:13px}
     .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;opacity:.95}
     .dot{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:6px}
@@ -65,7 +58,10 @@
     .legendTickets{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
     .legendTickets h4{margin:0 0 8px 0;color:#334155}
     .legendTickets ul{margin:0;padding-left:18px}
-
+    .aside{border-left:2px dashed var(--line);padding:12px 16px}
+    .aside h3{margin:0 0 8px 0;font-size:14px;color:#334155}
+    .aside .meta{font-size:12px;color:#64748b}
+    .aside pre{white-space:pre-wrap;word-wrap:break-word;background:#f1f5f9;border:1px solid var(--line);padding:8px;border-radius:10px;max-height:260px;overflow:auto}
     @media (min-width:1600px){ html{font-size:18px} .apto{height:54px} }
     @media (min-width:2400px){ html{font-size:22px} .apto{height:60px} }
     @media print{ header{display:none} .card{break-inside:avoid} footer{display:none} }
@@ -74,23 +70,362 @@
 <body>
   <header>
     <div class="brand">
-      <img alt="Logo" src="/Assets/logo.jpg?v=1758486362290" onerror="this.style.display='none'" style="display: none;">
-      <h1>Quadro Branco — Entregas por Cores</h1>
+      <img alt="Logo" src="Assets/logo.jpg?v=build" onerror="this.style.display='none'"/>
+      <h1>Quadro Branco — Entregas por Cores (Histórico vivo)</h1>
     </div>
     <div class="seg" role="tablist" aria-label="Selecionar quadro">
       <button id="tabEle" role="tab" aria-selected="true" class="active">Equipe Elétrica</button>
       <button id="tabHid" role="tab" aria-selected="false">Equipe Hidráulica</button>
     </div>
     <div class="tools">
+      <button id="btnAutor" title="Definir autor">Autor</button>
+      <button class="ghost" id="btnImport">Importar JSON</button>
+      <input type="file" id="fileInput" accept="application/json" style="display:none" />
       <button id="btnExport">Baixar JSON</button>
       <button class="ghost" id="btnCopyHTML">Copiar HTML completo</button>
-      <button class="ghost" id="btnZerar">Zerar quadro</button>
+      <button class="ghost" id="btnDownloadHTML">Baixar HTML completo</button>
+      <button class="danger" id="btnZerar">Zerar quadro atual</button>
       <button class="ghost" id="btnNovoChamado">Novo chamado</button>
     </div>
   </header>
+  <main class="wrap" id="wrap"></main>
+  <footer>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--ok)"></span><strong>OK</strong> <small>entregue</small></span>
+      <span><span class="dot" style="background:var(--pl)"></span><strong>PL</strong> <small>pendência leve</small></span>
+      <span><span class="dot" style="background:var(--pm)"></span><strong>PM</strong> <small>pendência média</small></span>
+      <span><span class="dot" style="background:var(--nc)"></span><strong>NC</strong> <small>não conforme</small></span>
+      <span><span class="dot" style="background:var(--nv)"></span><strong>NV</strong> <small>não vistoriado</small></span>
+    </div>
+    <div class="legendTickets" id="legendTickets"></div>
+  </footer>
 
-  <main class="wrap" id="wrap"><section class="card"><h2>Equipe Elétrica — Bloco 1</h2><div class="kpi"><span class="chip">OK: 9</span><span class="chip">PL: 1</span><span class="chip">PM: 0</span><span class="chip">NC: 0</span><span class="chip">NV: 72</span></div><div class="grid"><div class="head cell">Pav</div><div class="head cell">01</div><div class="head cell">02</div><div class="head cell">03</div><div class="head cell">04</div><div class="head cell">21</div><div class="cell apto nv" title="Apto 2101 • NV"><span class="label">2101 · NV</span></div><div class="cell apto nv" title="Apto 2102 • NV"><span class="label">2102 · NV</span></div><div class="cell apto disabled" title="Pav 21 • Inexistente"><span class="label">—</span></div><div class="cell apto disabled" title="Pav 21 • Inexistente"><span class="label">—</span></div><div class="head cell">20</div><div class="cell apto nv" title="Apto 2001 • NV"><span class="label">2001 · NV</span></div><div class="cell apto nv" title="Apto 2002 • NV"><span class="label">2002 · NV</span></div><div class="cell apto ok" title="Apto 2003 • OK"><span class="label">2003 · OK</span></div><div class="cell apto nv" title="Apto 2004 • NV"><span class="label">2004 · NV</span></div><div class="head cell">19</div><div class="cell apto nv" title="Apto 1901 • NV"><span class="label">1901 · NV</span></div><div class="cell apto nv" title="Apto 1902 • NV"><span class="label">1902 · NV</span></div><div class="cell apto nv" title="Apto 1903 • NV"><span class="label">1903 · NV</span></div><div class="cell apto nv" title="Apto 1904 • NV"><span class="label">1904 · NV</span></div><div class="head cell">18</div><div class="cell apto nv" title="Apto 1801 • NV"><span class="label">1801 · NV</span></div><div class="cell apto nv" title="Apto 1802 • NV"><span class="label">1802 · NV</span></div><div class="cell apto ok" title="Apto 1803 • OK"><span class="label">1803 · OK</span></div><div class="cell apto nv" title="Apto 1804 • NV"><span class="label">1804 · NV</span></div><div class="head cell">17</div><div class="cell apto nv" title="Apto 1701 • NV"><span class="label">1701 · NV</span></div><div class="cell apto nv" title="Apto 1702 • NV"><span class="label">1702 · NV</span></div><div class="cell apto nv" title="Apto 1703 • NV"><span class="label">1703 · NV</span></div><div class="cell apto nv" title="Apto 1704 • NV"><span class="label">1704 · NV</span></div><div class="head cell">16</div><div class="cell apto nv" title="Apto 1601 • NV"><span class="label">1601 · NV</span></div><div class="cell apto ok" title="Apto 1602 • OK"><span class="label">1602 · OK</span></div><div class="cell apto nv" title="Apto 1603 • NV"><span class="label">1603 · NV</span></div><div class="cell apto nv" title="Apto 1604 • NV"><span class="label">1604 · NV</span></div><div class="head cell">15</div><div class="cell apto nv" title="Apto 1501 • NV"><span class="label">1501 · NV</span></div><div class="cell apto nv" title="Apto 1502 • NV"><span class="label">1502 · NV</span></div><div class="cell apto nv" title="Apto 1503 • NV"><span class="label">1503 · NV</span></div><div class="cell apto nv" title="Apto 1504 • NV"><span class="label">1504 · NV</span></div><div class="head cell">14</div><div class="cell apto nv" title="Apto 1401 • NV"><span class="label">1401 · NV</span></div><div class="cell apto nv" title="Apto 1402 • NV"><span class="label">1402 · NV</span></div><div class="cell apto nv" title="Apto 1403 • NV"><span class="label">1403 · NV</span></div><div class="cell apto nv" title="Apto 1404 • NV"><span class="label">1404 · NV</span></div><div class="head cell">13</div><div class="cell apto nv" title="Apto 1301 • NV"><span class="label">1301 · NV</span></div><div class="cell apto nv" title="Apto 1302 • NV"><span class="label">1302 · NV</span></div><div class="cell apto nv" title="Apto 1303 • NV"><span class="label">1303 · NV</span></div><div class="cell apto nv" title="Apto 1304 • NV"><span class="label">1304 · NV</span></div><div class="head cell">12</div><div class="cell apto nv" title="Apto 1201 • NV"><span class="label">1201 · NV</span></div><div class="cell apto nv" title="Apto 1202 • NV"><span class="label">1202 · NV</span></div><div class="cell apto nv" title="Apto 1203 • NV"><span class="label">1203 · NV</span></div><div class="cell apto nv" title="Apto 1204 • NV"><span class="label">1204 · NV</span></div><div class="head cell">11</div><div class="cell apto nv" title="Apto 1101 • NV"><span class="label">1101 · NV</span></div><div class="cell apto nv" title="Apto 1102 • NV"><span class="label">1102 · NV</span></div><div class="cell apto nv" title="Apto 1103 • NV"><span class="label">1103 · NV</span></div><div class="cell apto nv" title="Apto 1104 • NV"><span class="label">1104 · NV</span></div><div class="head cell">10</div><div class="cell apto nv" title="Apto 1001 • NV"><span class="label">1001 · NV</span></div><div class="cell apto nv" title="Apto 1002 • NV"><span class="label">1002 · NV</span><div class="badge">100</div></div><div class="cell apto nv" title="Apto 1003 • NV"><span class="label">1003 · NV</span></div><div class="cell apto nv" title="Apto 1004 • NV"><span class="label">1004 · NV</span></div><div class="head cell">09</div><div class="cell apto nv" title="Apto 901 • NV"><span class="label">901 · NV</span></div><div class="cell apto nv" title="Apto 902 • NV"><span class="label">902 · NV</span></div><div class="cell apto nv" title="Apto 903 • NV"><span class="label">903 · NV</span></div><div class="cell apto nv" title="Apto 904 • NV"><span class="label">904 · NV</span></div><div class="head cell">08</div><div class="cell apto nv" title="Apto 801 • NV"><span class="label">801 · NV</span></div><div class="cell apto nv" title="Apto 802 • NV"><span class="label">802 · NV</span></div><div class="cell apto nv" title="Apto 803 • NV"><span class="label">803 · NV</span></div><div class="cell apto nv" title="Apto 804 • NV"><span class="label">804 · NV</span></div><div class="head cell">07</div><div class="cell apto nv" title="Apto 701 • NV"><span class="label">701 · NV</span></div><div class="cell apto nv" title="Apto 702 • NV"><span class="label">702 · NV</span></div><div class="cell apto nv" title="Apto 703 • NV"><span class="label">703 · NV</span></div><div class="cell apto nv" title="Apto 704 • NV"><span class="label">704 · NV</span></div><div class="head cell">06</div><div class="cell apto nv" title="Apto 601 • NV"><span class="label">601 · NV</span></div><div class="cell apto nv" title="Apto 602 • NV"><span class="label">602 · NV</span></div><div class="cell apto nv" title="Apto 603 • NV"><span class="label">603 · NV</span></div><div class="cell apto nv" title="Apto 604 • NV"><span class="label">604 · NV</span></div><div class="head cell">05</div><div class="cell apto nv" title="Apto 501 • NV"><span class="label">501 · NV</span></div><div class="cell apto nv" title="Apto 502 • NV"><span class="label">502 · NV</span></div><div class="cell apto nv" title="Apto 503 • NV"><span class="label">503 · NV</span></div><div class="cell apto nv" title="Apto 504 • NV"><span class="label">504 · NV</span></div><div class="head cell">04</div><div class="cell apto nv" title="Apto 401 • NV"><span class="label">401 · NV</span></div><div class="cell apto nv" title="Apto 402 • NV"><span class="label">402 · NV</span></div><div class="cell apto nv" title="Apto 403 • NV"><span class="label">403 · NV</span></div><div class="cell apto nv" title="Apto 404 • NV"><span class="label">404 · NV</span></div><div class="head cell">03</div><div class="cell apto nv" title="Apto 301 • NV"><span class="label">301 · NV</span></div><div class="cell apto nv" title="Apto 302 • NV"><span class="label">302 · NV</span></div><div class="cell apto nv" title="Apto 303 • NV"><span class="label">303 · NV</span></div><div class="cell apto nv" title="Apto 304 • NV"><span class="label">304 · NV</span></div><div class="head cell">02</div><div class="cell apto nv" title="Apto 201 • NV"><span class="label">201 · NV</span></div><div class="cell apto pl" title="Apto 202 • PL"><span class="label">202 · PL</span></div><div class="cell apto ok" title="Apto 203 • OK"><span class="label">203 · OK</span></div><div class="cell apto ok" title="Apto 204 • OK"><span class="label">204 · OK</span></div><div class="head cell">01</div><div class="cell apto ok" title="Apto 101 • OK"><span class="label">101 · OK</span></div><div class="cell apto ok" title="Apto 102 • OK"><span class="label">102 · OK</span></div><div class="cell apto ok" title="Apto 103 • OK"><span class="label">103 · OK</span></div><div class="cell apto ok" title="Apto 104 • OK"><span class="label">104 · OK</span></div></div><div class="tickets"><h3>Pendências / Chamados — Bloco 1</h3><div class="ticket"><span class="tid">100</span>
-              <div class="ttext">
-                <div><strong>Apto 1002</strong> — vazamen5</div>
-                <div class="tmeta">Pav 10 • Coluna 02</div>
-              </div><button>Excluir</button></div></div></section><section class="card"><h2>Equipe Elétrica — Bloco 2</h2><div class="kpi"><span class="chip">OK: 6</span><span class="chip">PL: 0</span><span class="chip">PM: 0</span><span class="chip">NC: 0</span><span class="chip">NV: 76</span></div><div class="grid"><div class="head cell">Pav</div><div class="head cell">01</div><div class="head cell">02</div><div class="head cell">03</div><div class="head cell">04</div><div class="head cell">21</div><div class="cell apto nv" title="Apto 2101 • NV"><span class="label">2101 · NV</span></div><div class="cell apto nv" title="Apto 2102 • NV"><span class="label">2102 · NV</span></div><div class="cell apto disabled" title="Pav 21 • Inexistente"><span class="label">—</span></div><div class="cell apto disabled" title="Pav 21 • Inexistente"><span class="label">—</span></div><div class="head cell">20</div><div class="cell apto nv" title="Apto 2001 • NV"><span class="label">2001 · NV</span></div><div class="cell apto nv" title="Apto 2002 • NV"><span class="label">2002 · NV</span></div><div class="cell apto nv" title="Apto 2003 • NV"><span class="label">2003 · NV</span></div><div class="cell apto nv" title="Apto 2004 • NV"><span class="label">2004 · NV</span></div><div class="head cell">19</div><div class="cell apto nv" title="Apto 1901 • NV"><span class="label">1901 · NV</span></div><div class="cell apto nv" title="Apto 1902 • NV"><span class="label">1902 · NV</span></div><div class="cell apto nv" title="Apto 1903 • NV"><span class="label">1903 · NV</span></div><div class="cell apto nv" title="Apto 1904 • NV"><span class="label">1904 · NV</span></div><div class="head cell">18</div><div class="cell apto nv" title="Apto 1801 • NV"><span class="label">1801 · NV</span></div><div class="cell apto nv" title="Apto 1802 • NV"><span class="label">1802 · NV</span></div><div class="cell apto nv" title="Apto 1803 • NV"><span class="label">1803 · NV</span></div><div class="cell apto nv" title="Apto 1804 • NV"><span class="label">1804 · NV</span></div><div class="head cell">17</div><div class="cell apto nv" title="Apto 1701 • NV"><span class="label">1701 · NV</span></div><div class="cell apto nv" title="Apto 1702 • NV"><span class="label">1702 · NV</span></div><div class="cell apto nv" title="Apto 1703 • NV"><span class="label">1703 · NV</span></div><div class="cell apto nv" title="Apto 1704 • NV"><span class="label">1704 · NV</span></div><div class="head cell">16</div><div class="cell apto nv" title="Apto 1601 • NV"><span class="label">1601 · NV</span></div><div class="cell apto nv" title="Apto 1602 • NV"><span class="label">1602 · NV</span></div><div class="cell apto nv" title="Apto 1603 • NV"><span class="label">1603 · NV</span></div><div class="cell apto nv" title="Apto 1604 • NV"><span class="label">1604 · NV</span></div><div class="head cell">15</div><div class="cell apto nv" title="Apto 1501 • NV"><span class="label">1501 · NV</span></div><div class="cell apto nv" title="Apto 1502 • NV"><span class="label">1502 · NV</span></div><div class="cell apto nv" title="Apto 1503 • NV"><span class="label">1503 · NV</span></div><div class="cell apto nv" title="Apto 1504 • NV"><span class="label">1504 · NV</span></div><div class="head cell">14</div><div class="cell apto nv" title="Apto 1401 • NV"><span class="label">1401 · NV</span></div><div class="cell apto nv" title="Apto 1402 • NV"><span class="label">1402 · NV</span></div><div class="cell apto nv" title="Apto 1403 • NV"><span class="label">1403 · NV</span></div><div class="cell apto nv" title="Apto 1404 • NV"><span class="label">1404 · NV</span></div><div class="head cell">13</div><div class="cell apto nv" title="Apto 1301 • NV"><span class="label">1301 · NV</span></div><div class="cell apto nv" title="Apto 1302 • NV"><span class="label">1302 · NV</span></div><div class="cell apto nv" title="Apto 1303 • NV"><span class="label">1303 · NV</span></div><div class="cell apto nv" title="Apto 1304 • NV"><span class="label">1304 · NV</span></div><div class="head cell">12</div><div class="cell apto nv" title="Apto 1201 • NV"><span class="label">1201 · NV</span></div><div class="cell apto nv" title="Apto 1202 • NV"><span class="label">1202 · NV</span></div><div class="cell apto nv" title="Apto 1203 • NV"><span class="label">1203 · NV</span></div><div class="cell apto nv" title="Apto 1204 • NV"><span class="label">1204 · NV</span></div><div class="head cell">11</div><div class="cell apto nv" title="Apto 1101 • NV"><span class="label">1101 · NV</span></div><div class="cell apto nv" title="Apto 1102 • NV"><span class="label">1102 · NV</span></div><div class="cell apto nv" title="Apto 1103 • NV"><span class="label">1103 · NV</span></div><div class="cell apto nv" title="Apto 1104 • NV"><span class="label">1104 · NV</span></div><div class="head cell">10</div><div class="cell apto nv" title="Apto 1001 • NV"><span class="label">1001 · NV</span></div><div class="cell apto nv" title="Apto 1002 • NV"><span class="label">1002 · NV</span></div><div class="cell apto nv" title="Apto 1003 • NV"><span class="label">1003 · NV</span></div><div class="cell apto nv" title="Apto 1004 • NV"><span class="label">1004 · NV</span></div><div class="head cell">09</div><div class="cell apto 
+  <!--
+    \u26a1 ESQUEMA v4 — histórico vivo por eventos
+    bundle = {
+      schema:"v4", version: 1,
+      meta: { createdAt, updatedAt, author },
+      snapshot: { current, quadros: { eletrica: {...}, hidraulica: {...} } },
+      history: [ { id, ts, who, type, data }, ... ]
+    }
+    Tipos de evento:
+      - setStatus { quadro, bloco, pavIndex, aptIndex, to }
+      - addChamado { quadro, chamado:{id, bloco, pavIndex, aptIndex, texto} }
+      - delChamado { quadro, id }
+  -->
+  <script id="DATA_JSON" type="application/json">{"schema":"v4","version":1,"meta":{"createdAt":null,"updatedAt":null,"author":""},"snapshot":{"current":"eletrica","quadros":{"eletrica":{"nome":"Equipe Elétrica","blocos":{"Bloco 1":[],"Bloco 2":[]},"chamados":[]},"hidraulica":{"nome":"Equipe Hidráulica","blocos":{"Bloco 1":[],"Bloco 2":[]},"chamados":[]}}},"history":[],"__embedded":true}</script>
+  <script>
+    const STORAGE_KEY = 'quadro_entregas_v4_bundle';
+    const PAV=21, APT=4, ORDER=["nv","ok","pl","pm","nc"], LABEL={nv:"NV",ok:"OK",pl:"PL",pm:"PM",nc:"NC",xx:"--"};
+    const aptosNoPav = i=> (PAV-i)===21?2:4; // pavimento 21 tem 2 aptos
+    const aptNumber=(p,a)=>`${p}${(a+1).toString().padStart(2,'0')}`;
+    const emptyMatriz=()=>Array.from({length:PAV},(_,i)=>Array.from({length:APT},(_,a)=>a<aptosNoPav(i)?'nv':'xx'));
+
+    // ---------- Utils ----------
+    const $=sel=>document.querySelector(sel);
+    const byId=id=>document.getElementById(id);
+    const nowISO=()=>new Date().toISOString();
+    const uuid=()=>crypto.randomUUID?crypto.randomUUID():('id-'+Math.random().toString(36).slice(2)+Date.now());
+    function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m])); }
+
+    // ---------- Bundle helpers ----------
+    function defaultBundle(){
+      return {
+        schema:'v4', version:1,
+        meta:{ createdAt: nowISO(), updatedAt: nowISO(), author: (localStorage.getItem('quadro_v4:author')||'') },
+        snapshot: {
+          current:'eletrica',
+          quadros:{
+            eletrica:{ nome:'Equipe Elétrica', blocos:{ 'Bloco 1':emptyMatriz(), 'Bloco 2':emptyMatriz() }, chamados:[] },
+            hidraulica:{ nome:'Equipe Hidráulica', blocos:{ 'Bloco 1':emptyMatriz(), 'Bloco 2':emptyMatriz() }, chamados:[] }
+          }
+        },
+        history:[],
+        __embedded:true
+      };
+    }
+
+    function normalizeBundle(b){
+      const base=defaultBundle();
+      if(!b||typeof b!=='object') return base;
+      const out={...base};
+      out.meta={ ...base.meta, ...(b.meta||{}) };
+      out.version = Number.isFinite(b.version)? b.version : 1;
+      out.schema = 'v4';
+      // Reset snapshot to defaults, then apply events
+      out.snapshot = base.snapshot; 
+      const combined = Array.isArray(b.history)? b.history.slice() : [];
+      applyEvents(out.snapshot, combined);
+      out.history = dedupEvents(combined);
+      out.meta.updatedAt = nowISO();
+      return out;
+    }
+
+    function dedupEvents(events){
+      const seen=new Set();
+      const arr=[];
+      for(const e of (events||[])){
+        if(!e||typeof e!=="object") continue;
+        const id=e.id||uuid();
+        if(seen.has(id)) continue;
+        seen.add(id);
+        arr.push({ id, ts:e.ts||nowISO(), who: (e.who||''), type:e.type, data:e.data });
+      }
+      arr.sort((a,b)=> (a.ts<b.ts? -1 : a.ts>b.ts? 1 : 0));
+      return arr;
+    }
+
+    function applyEvents(snapshot, events){
+      const s = snapshot;
+      // Ensure matrices exist
+      for(const key of ['eletrica','hidraulica']){
+        if(!s.quadros[key]) s.quadros[key]={ nome:key, blocos:{}, chamados:[] };
+        for(const b of ['Bloco 1','Bloco 2']){
+          if(!Array.isArray(s.quadros[key].blocos[b])) s.quadros[key].blocos[b]=emptyMatriz();
+        }
+        if(!Array.isArray(s.quadros[key].chamados)) s.quadros[key].chamados=[];
+      }
+      (events||[]).forEach(ev=>{
+        if(!ev||typeof ev!=="object") return;
+        const { type, data } = ev;
+        if(type==='setStatus'){
+          const { quadro, bloco, pavIndex, aptIndex, to } = data||{};
+          const q = s.quadros[quadro];
+          if(q && q.blocos[bloco] && q.blocos[bloco][pavIndex] && q.blocos[bloco][pavIndex][aptIndex] && ORDER.includes(to)){
+            q.blocos[bloco][pavIndex][aptIndex] = to;
+          }
+        } else if(type==='addChamado'){
+          const { quadro, chamado } = data||{};
+          const q = s.quadros[quadro];
+          if(q && chamado && chamado.id){
+            const exists = q.chamados.some(c=>c.id===chamado.id);
+            if(!exists){ q.chamados.push({ id:String(chamado.id), bloco:chamado.bloco, pavIndex:+chamado.pavIndex, aptIndex:+chamado.aptIndex, texto:(chamado.texto||'') }); }
+          }
+        } else if(type==='delChamado'){
+          const { quadro, id } = data||{};
+          const q = s.quadros[quadro];
+          if(q && id!=null){ q.chamados = q.chamados.filter(c=>c.id!==id); }
+        }
+      });
+      return s;
+    }
+
+    function mergeBundles(a,b){
+      // Junta histories e reaplica sobre snapshot default
+      const base = defaultBundle();
+      const events = dedupEvents([...(a?.history||[]), ...(b?.history||[])]);
+      const out = { ...base, meta: { ...base.meta, author: a?.meta?.author || b?.meta?.author || base.meta.author } };
+      applyEvents(out.snapshot, events);
+      out.history = events;
+      out.meta.createdAt = a?.meta?.createdAt || b?.meta?.createdAt || base.meta.createdAt;
+      out.meta.updatedAt = nowISO();
+      return out;
+    }
+
+    // ---------- Load initial bundle (localStorage > embedded) ----------
+    let bundle = defaultBundle();
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){ bundle = normalizeBundle(JSON.parse(raw)); }
+      else {
+        const emb = byId('DATA_JSON');
+        if(emb && emb.textContent.trim()){ bundle = normalizeBundle(JSON.parse(emb.textContent)); }
+      }
+    }catch(e){ console.warn('normalize fail', e); bundle = defaultBundle(); }
+
+    function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(bundle)); }catch(_){} }
+
+    // ---------- UI ----------
+    const wrap=byId('wrap'), tabEle=byId('tabEle'), tabHid=byId('tabHid');
+
+    function chip(t){return `<span class="chip">${t}</span>`}
+    function head(t){const d=document.createElement('div'); d.className='head cell'; d.textContent=t; return d;}
+    function count(m){const r={ok:0,pl:0,pm:0,nc:0,nv:0}; (m||[]).flat().forEach(s=>{if(r[s]!=null) r[s]++;}); return r;}
+    function chamadosFor(q,b,i,a){const arr=bundle.snapshot.quadros[q].chamados||[]; return arr.filter(c=>c.bloco===b&&c.pavIndex===i&&c.aptIndex===a);} 
+
+    function render(){
+      tabEle.classList.toggle('active', bundle.snapshot.current==='eletrica');
+      tabEle.setAttribute('aria-selected', bundle.snapshot.current==='eletrica');
+      tabHid.classList.toggle('active', bundle.snapshot.current==='hidraulica');
+      tabHid.setAttribute('aria-selected', bundle.snapshot.current==='hidraulica');
+      wrap.innerHTML='';
+      const qk=bundle.snapshot.current; const q=bundle.snapshot.quadros[qk];
+
+      Object.entries(q.blocos).forEach(([nome,matriz])=>{
+        const card=document.createElement('section');
+        card.className='card';
+        const h2=document.createElement('h2');
+        h2.textContent=`${q.nome} — ${nome}`;
+        card.appendChild(h2);
+        const kpi=document.createElement('div');
+        kpi.className='kpi';
+        const s=count(matriz);
+        kpi.innerHTML=[chip(`OK: ${s.ok}`),chip(`PL: ${s.pl}`),chip(`PM: ${s.pm}`),chip(`NC: ${s.nc}`),chip(`NV: ${s.nv}`)].join('');
+        card.appendChild(kpi);
+        const grid=document.createElement('div'); grid.className='grid';
+        grid.appendChild(head('Pav'));
+        for(let a=1;a<=APT;a++) grid.appendChild(head(String(a).padStart(2,'0')));
+        for(let i=0;i<PAV;i++){
+          const pav=(PAV-i).toString().padStart(2,'0');
+          grid.appendChild(head(pav));
+          const valid=aptosNoPav(i);
+          for(let a=0;a<APT;a++){
+            const st=matriz[i][a];
+            const num=aptNumber(PAV-i,a);
+            const disabled=(a>=valid)||st==='xx';
+            const d=document.createElement('div');
+            d.className=`cell apto ${disabled?'disabled':st}`;
+            d.title=disabled?`Pav ${pav} • Inexistente`:`Apto ${num} • ${LABEL[st]}`;
+            d.innerHTML=`<span class="label">${disabled?"\u2014":`${num} · ${LABEL[st]}`}</span>`;
+            if(!disabled){
+              d.addEventListener('click',()=>{
+                const cur = bundle.snapshot.quadros[qk].blocos[nome][i][a];
+                const to = ORDER[(ORDER.indexOf(cur)+1)%ORDER.length];
+                // Aplica no snapshot
+                bundle.snapshot.quadros[qk].blocos[nome][i][a]=to;
+                // Registra evento
+                bundle.history.push({ id:uuid(), ts:nowISO(), who:(localStorage.getItem('quadro_v4:author')||''), type:'setStatus', data:{ quadro:qk, bloco:nome, pavIndex:i, aptIndex:a, to } });
+                bundle.meta.updatedAt = nowISO();
+                save();
+                render();
+              });
+              const list=chamadosFor(qk,nome,i,a);
+              if(list.length){ const b=document.createElement('div'); b.className='badge'; b.textContent=list.length===1?list[0].id:`+${list.length}`; d.appendChild(b);} 
+            }
+            grid.appendChild(d);
+          }
+        }
+        card.appendChild(grid);
+        const tks=document.createElement('div'); tks.className='tickets'; tks.innerHTML=`<h3>Pendências / Chamados — ${nome}</h3>`;
+        const lista=(bundle.snapshot.quadros[qk].chamados||[]).filter(c=>c.bloco===nome);
+        if(!lista.length){ const emp=document.createElement('div'); emp.className='tmeta'; emp.textContent='Sem chamados.'; tks.appendChild(emp);} else {
+          lista.sort((a,b)=>a.id.localeCompare(b.id)).forEach(ch=>{
+            const item=document.createElement('div'); item.className='ticket';
+            const pav=(PAV-ch.pavIndex).toString().padStart(2,'0'); const num=aptNumber(PAV-ch.pavIndex,ch.aptIndex);
+            item.innerHTML=`<span class="tid">${escapeHTML(ch.id)}</span><div class="ttext"><div><strong>Apto ${num}</strong> — ${escapeHTML(ch.texto||'')}</div><div class="tmeta">Pav ${pav} • Coluna ${(ch.aptIndex+1).toString().padStart(2,'0')}</div></div>`;
+            const del=document.createElement('button'); del.textContent='Excluir'; del.addEventListener('click',()=>{
+              // Remove do snapshot
+              const qref=bundle.snapshot.quadros[qk];
+              qref.chamados = qref.chamados.filter(c=>c.id!==ch.id);
+              // Evento
+              bundle.history.push({ id:uuid(), ts:nowISO(), who:(localStorage.getItem('quadro_v4:author')||''), type:'delChamado', data:{ quadro:qk, id: ch.id } });
+              bundle.meta.updatedAt = nowISO(); save(); render();
+            });
+            item.appendChild(del);
+            tks.appendChild(item);
+          });
+        }
+        card.appendChild(tks);
+        wrap.appendChild(card);
+      });
+      renderLegendaGeral();
+      renderAside();
+    }
+
+    function renderLegendaGeral(){
+      const box=byId('legendTickets');
+      const qk=bundle.snapshot.current;
+      const arr=bundle.snapshot.quadros[qk].chamados||[];
+      if(!arr.length){ box.innerHTML=''; return; }
+      const itens=arr.slice().sort((a,b)=>a.id.localeCompare(b.id)).map(ch=>{
+        const num=aptNumber(PAV-ch.pavIndex,ch.aptIndex);
+        return `<li><strong>${escapeHTML(ch.id)}</strong>: ${escapeHTML(ch.texto||'')} <span style="color:#64748b">(${escapeHTML(ch.bloco)} • Apto ${num})</span></li>`;
+      }).join('');
+      box.innerHTML=`<h4>Legenda de chamados — ${bundle.snapshot.quadros[qk].nome}</h4><ul>${itens}</ul>`;
+    }
+
+    function renderAside(){
+      // Painel lateral com meta e últimos eventos
+      let aside = byId('aside');
+      if(!aside){
+        aside=document.createElement('section');
+        aside.id='aside'; aside.className='aside';
+        wrap.parentNode.insertBefore(aside, wrap.nextSibling);
+      }
+      const last10 = bundle.history.slice(-10);
+      aside.innerHTML = `
+        <h3>Histórico (últimos ${last10.length})</h3>
+        <div class="meta">Autor: <strong>${escapeHTML(bundle.meta.author||'-')}</strong> • Atualizado: ${escapeHTML(bundle.meta.updatedAt||'-')}</div>
+        <pre>${last10.map(e=>`${e.ts} · ${e.type} · ${e.who||''}`).join('\n')||'Sem eventos.'}</pre>
+      `;
+    }
+
+    // ---------- Actions ----------
+    byId('btnAutor').addEventListener('click',()=>{
+      const cur = localStorage.getItem('quadro_v4:author')||'';
+      const v = prompt('Nome do autor (aparece no histórico):', cur||'estagiario');
+      if(v!=null){ localStorage.setItem('quadro_v4:author', v); bundle.meta.author=v; bundle.meta.updatedAt=nowISO(); save(); render(); }
+    });
+
+    byId('btnExport').addEventListener('click', ()=>{
+      const out = { ...bundle, __embedded:false };
+      const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='quadro-v4.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    byId('btnCopyHTML').addEventListener('click', async ()=>{
+      const html=buildFullHTMLWithBundle(bundle);
+      try{ await navigator.clipboard.writeText(html); alert('HTML completo copiado! Cole no GitHub.'); }
+      catch(e){ const ta=document.createElement('textarea'); ta.value=html; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); alert('HTML copiado (fallback).'); }
+    });
+
+    byId('btnDownloadHTML').addEventListener('click', ()=>{
+      const html=buildFullHTMLWithBundle(bundle);
+      const blob=new Blob([html],{type:'text/html'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='index.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    byId('btnZerar').addEventListener('click', ()=>{
+      if(!confirm('Zerar status e chamados apenas do quadro atual?')) return;
+      const qk=bundle.snapshot.current; const q=bundle.snapshot.quadros[qk];
+      q.blocos['Bloco 1']=emptyMatriz(); q.blocos['Bloco 2']=emptyMatriz(); q.chamados=[];
+      bundle.history.push({ id:uuid(), ts:nowISO(), who:(localStorage.getItem('quadro_v4:author')||''), type:'setStatus', data:{ quadro:qk, bloco:'Bloco 1', pavIndex:0, aptIndex:0, to:'nv' } });
+      bundle.meta.updatedAt = nowISO(); save(); render();
+    });
+
+    byId('btnNovoChamado').addEventListener('click', ()=>{
+      const qk=bundle.snapshot.current; const q=bundle.snapshot.quadros[qk];
+      try{
+        const bloco=prompt(`Bloco (${Object.keys(q.blocos).join(' / ')}):`); if(!bloco) return; if(!q.blocos[bloco]){ alert('Bloco não encontrado.'); return; }
+        const pavStr=prompt('Pavimento (21 a 1):'); if(!pavStr) return; const pav=parseInt(pavStr,10); if(!(pav>=1&&pav<=21)){ alert('Pavimento inválido'); return; }
+        const aptStr=prompt('Apto (01 a 04):'); if(!aptStr) return; const apt=parseInt(aptStr,10); if(!(apt>=1&&apt<=4)){ alert('Apto inválido'); return; }
+        const i=PAV-pav; const a=apt-1; if(a>=aptosNoPav(i)){ alert('Este apartamento não existe neste pavimento.'); return; }
+        const id=prompt('ID do chamado (ex.: CH-101):'); if(!id) return; const texto=prompt('Descrição resumida da pendência:')||'';
+        const chamado={ id:String(id), bloco, pavIndex:i, aptIndex:a, texto };
+        q.chamados.push(chamado);
+        bundle.history.push({ id:uuid(), ts:nowISO(), who:(localStorage.getItem('quadro_v4:author')||''), type:'addChamado', data:{ quadro:qk, chamado } });
+        bundle.meta.updatedAt=nowISO(); save(); render();
+      }catch(e){ console.warn(e); }
+    });
+
+    byId('btnImport').addEventListener('click', ()=> byId('fileInput').click());
+    byId('fileInput').addEventListener('change', async (ev)=>{
+      const f=ev.target.files[0]; if(!f) return; 
+      try{
+        const text = await f.text();
+        const incoming = normalizeBundle(JSON.parse(text));
+        bundle = mergeBundles(bundle, incoming);
+        save(); render(); alert('JSON importado e mesclado com sucesso!');
+      }catch(e){ alert('Falha ao importar JSON: '+e.message); }
+      ev.target.value='';
+    });
+
+    tabEle.addEventListener('click', ()=>{ bundle.snapshot.current='eletrica'; save(); render(); });
+    tabHid.addEventListener('click', ()=>{ bundle.snapshot.current='hidraulica'; save(); render(); });
+
+    function buildFullHTMLWithBundle(cur){
+      const doc=document.documentElement.cloneNode(true);
+      const dataTag=doc.querySelector('#DATA_JSON'); if(dataTag){ dataTag.textContent=JSON.stringify({ ...cur, __embedded:true }); }
+      const logo=doc.querySelector('.brand img'); if(logo){ const u=new URL(logo.getAttribute('src'), window.location.origin); u.search='?v='+Date.now(); logo.setAttribute('src', u.pathname+u.search); }
+      const scripts=doc.querySelectorAll('script');
+      scripts.forEach(sc=>{ if(sc.textContent.includes('const STORAGE_KEY')){ sc.textContent=sc.textContent.replace(/(\bmeta\b\s*:\s*\{[^}]*updatedAt\s*:\s*)([^,}]+)/, `$1"${nowISO()}"`); } });
+      return '<!DOCTYPE html>'+'\n'+doc.outerHTML;
+    }
+
+    // Inicializa
+    render();
+  </script>
+</body>
+</html>
