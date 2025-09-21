@@ -4,223 +4,219 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Atlântico Golf — Cronograma (11/Set)</title>
-    <!-- Tailwind (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React 18 (UMD) + Babel (para JSX no navegador) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <style>
-      html,body{height:100%; background:#f5f7fb; color:#111827}
+      html,body{height:100%;background:#f5f7fb;color:#111827}
     </style>
   </head>
   <body>
     <div id="root"></div>
 
     <script type="text/babel">
-      // =============================
-      // Atlântico Golf — Cronograma v3 (página estática)
-      // LOGO: apenas via arquivo no repositório (ex.: ./logo.jpg ou ./assets/logo.png).
-      // Não há mais campos/controles na página para subir ou informar URL.
-      // =============================
-
       const { useMemo, useState, useEffect } = React;
 
-      // Utils de datas
+      // ===== Datas e helpers =====
       const d = (s) => new Date(s + "T00:00:00");
       const fmt = (date) => date.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
       const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
       const daysBetween = (a,b) => Math.max(0, Math.round((b - a) / (24*3600*1000)));
-
-      // Janela / Hoje
-      const WINDOW_START = d("2025-06-02");
-      const WINDOW_END   = d("2026-01-30");
-      const MS = 24 * 3600 * 1000;
       const TODAY = new Date();
 
-      // Paleta
+      // Janela (conforme documento)
+      const WINDOW_START = d("2025-06-02");
+      const WINDOW_END   = d("2026-01-30");
+      const MS = 24*3600*1000;
+
+      // ===== Estilo =====
       const COLORS = {
-        base: "#0e3a6d",
-        bar: "#2b8ccc",
-        done: "#16a34a",
-        wait: "#ca8a04",
-        risk: "#b91c1c",
-        hold: "#9333ea",
-        grid: "#e2e8f0",
-        text: "#111827",
-        bg:   "#f5f7fb",
-        card: "#ffffff",
-        border: "#cbd5e1",
+        base:"#0e3a6d", bar:"#2b8ccc", done:"#16a34a", wait:"#ca8a04", risk:"#b91c1c", hold:"#9333ea",
+        grid:"#e2e8f0", text:"#111827", bg:"#f5f7fb", card:"#ffffff", border:"#cbd5e1"
       };
 
-      // Dados (resumo)
+      // ===== Dados (SUBSTITUI TUDO pelo que você enviou) =====
+      // Mapeamento por bloco:
+      // - Bloco 1: Id 1..10 + Hidro/Gás Id 35..47
+      // - Bloco 2: Id 12..34
+      // - Bloco 3: Id 48..71 + Hidro/Gás Id 72..83
+      // - Embasamento: Id 84..121 + 97..105 + 122,134,137
+      // - Id 0 é o macro do projeto; deixei como "Bloco 1" (ajuste se quiser em “Todos”)
+      const t = (id, bloco, nome, i, f, pct, obs="") => ({ id, bloco, nome, inicio:i, fim:f, pct, obs });
+
       const tasks = [
-        { id: 0, bloco: "Geral", nome: "Atlântico Golf (Projeto)", inicio: "2025-06-02", fim: "2026-01-30", pct: 27, obs: "Escopo total" },
-        // Bloco 1
-        { id: 1, bloco: "Bloco 1", nome: "Entrada de Energia", inicio: "2025-06-02", fim: "2025-12-24", pct: 11 },
-        { id: 3, bloco: "Bloco 1", nome: "Alimentadores entre Cofres e PDMDs", inicio: "2025-11-10", fim: "2025-12-24", pct: 0, obs: "Aguardando cabos da Patrimar" },
-        { id: 4, bloco: "Bloco 1", nome: "Instalação Painéis Padrão Light (Térreo)", inicio: "2025-11-10", fim: "2025-12-24", pct: 0, obs: "Aguardando chegada dos painéis" },
-        { id: 5, bloco: "Bloco 1", nome: "Infra entre Painéis Light (Térreo ↔ Subsolo)", inicio: "2025-11-10", fim: "2025-12-24", pct: 0 },
-        { id: 6, bloco: "Bloco 1", nome: "Lançamento de Alimentadores Painéis Light", inicio: "2025-10-01", fim: "2025-10-07", pct: 0, obs: "Depende de painéis" },
-        { id: 7, bloco: "Bloco 1", nome: "Fechamento de Alimentadores Painéis Light", inicio: "2025-10-08", fim: "2025-10-13", pct: 0, obs: "Depende de painéis" },
-        { id: 8, bloco: "Bloco 1", nome: "Conclusão Barramentos Blindados", inicio: "2025-08-01", fim: "2025-08-22", pct: 95, obs: "Aguardando desobstrução de trechos" },
-        { id: 9, bloco: "Bloco 1", nome: "Ligação Barramentos → Painéis Light", inicio: "2025-08-01", fim: "2025-08-07", pct: 0, obs: "Depende de painéis" },
-        { id: 10, bloco: "Bloco 1", nome: "Peças em Hold dos Barramentos", inicio: "2025-08-20", fim: "2025-09-05", pct: 0, obs: "Aguardando" },
-        // Bloco 2
-        { id: 12, bloco: "Bloco 2", nome: "Instalações Elétricas/Especiais/SPDA/Entrada", inicio: "2025-06-02", fim: "2026-01-16", pct: 54 },
-        { id: 14, bloco: "Bloco 2", nome: "Interruptores e Tomadas (Aptos)", inicio: "2025-06-02", fim: "2025-07-28", pct: 95 },
-        { id: 15, bloco: "Bloco 2", nome: "Interruptores/Tomadas Térreo e Telhado", inicio: "2025-06-30", fim: "2025-07-24", pct: 80, obs: "Aguardando chegada dos interruptores" },
-        { id: 16, bloco: "Bloco 2", nome: "QDLs Aptos + Fechamento de Circuitos", inicio: "2025-06-02", fim: "2025-09-26", pct: 70, obs: "Faltando material / verificar estoque" },
-        { id: 18, bloco: "Bloco 2", nome: "Alimentadores PDMDs → Aptos (furtados)", inicio: "2025-06-23", fim: "2025-12-19", pct: 30 },
-        { id: 19, bloco: "Bloco 2", nome: "SPDA – Barra Chata", inicio: "2025-07-14", fim: "2025-10-17", pct: 60, obs: "Aguardando liberação Patrimar" },
-        { id: 20, bloco: "Bloco 2", nome: "Caixas de Painéis Áreas Comuns", inicio: "2025-06-02", fim: "2025-11-14", pct: 60, obs: "Prazo mediante liberação de área (meados/11)" },
-        { id: 21, bloco: "Bloco 2", nome: "Fechamento Infra Painéis Áreas Comuns", inicio: "2025-06-02", fim: "2025-11-14", pct: 50, obs: "Acompanha caixas" },
-        { id: 22, bloco: "Bloco 2", nome: "Fechamento Alimentadores/Circuitos – Áreas Comuns", inicio: "2025-09-01", fim: "2025-11-21", pct: 70, obs: "Aguardando miolos dos painéis" },
-        { id: 23, bloco: "Bloco 2", nome: "Instalação Painéis Padrão Light (Térreo)", inicio: "2025-11-03", fim: "2025-11-07", pct: 0 },
-        { id: 24, bloco: "Bloco 2", nome: "Infra Painéis Light (Térreo ↔ Subsolo)", inicio: "2025-11-10", fim: "2025-11-14", pct: 0 },
-        { id: 25, bloco: "Bloco 2", nome: "Lançamento Alimentadores Painéis Light", inicio: "2025-11-03", fim: "2025-11-10", pct: 0, obs: "Depende dos cabos" },
-        { id: 26, bloco: "Bloco 2", nome: "Fechamento Alimentadores Painéis Light", inicio: "2025-11-17", fim: "2025-11-20", pct: 0, obs: "Depende dos cabos" },
-        { id: 27, bloco: "Bloco 2", nome: "Conclusão Barramentos Blindados", inicio: "2025-08-01", fim: "2026-01-09", pct: 80 },
-        { id: 28, bloco: "Bloco 2", nome: "Ligação Barramentos → Painéis Light", inicio: "2026-01-12", fim: "2026-01-16", pct: 0 },
-        { id: 29, bloco: "Bloco 2", nome: "Cabeamentos Automáticos de Boia (sup.)", inicio: "2025-10-15", fim: "2025-10-30", pct: 60, obs: "Cabo furtado nas duas torres" },
-        { id: 30, bloco: "Bloco 2", nome: "Luminárias Áreas Comuns", inicio: "2025-10-06", fim: "2025-10-24", pct: 0 },
-        { id: 31, bloco: "Bloco 2", nome: "Entregas para Qualidade (aptos)", inicio: "2025-09-10", fim: "2025-12-26", pct: 0 },
-        // Bloco 3
-        { id: 49, bloco: "Bloco 3", nome: "Instalações Elétricas/Especiais/SPDA/Entrada", inicio: "2025-06-02", fim: "2026-01-16", pct: 47 },
-        { id: 50, bloco: "Bloco 3", nome: "Interruptores e Tomadas (Aptos)", inicio: "2025-06-02", fim: "2025-07-28", pct: 95 },
-        { id: 51, bloco: "Bloco 3", nome: "Interruptores/Tomadas Térreo e Telhado", inicio: "2025-06-30", fim: "2025-07-24", pct: 80, obs: "Aguardando chegada dos interruptores" },
-        { id: 52, bloco: "Bloco 3", nome: "QDLs Aptos + Fechamento de Circuitos", inicio: "2025-06-02", fim: "2025-09-26", pct: 70 },
-        { id: 54, bloco: "Bloco 3", nome: "Alimentadores PDMDs → Aptos (furtados)", inicio: "2025-06-23", fim: "2025-12-19", pct: 30 },
-        { id: 55, bloco: "Bloco 3", nome: "SPDA – Barra Chata", inicio: "2025-07-14", fim: "2025-10-17", pct: 60 },
-        { id: 56, bloco: "Bloco 3", nome: "Caixas de Painéis Áreas Comuns", inicio: "2025-06-02", fim: "2025-11-14", pct: 80 },
-        { id: 57, bloco: "Bloco 3", nome: "Fechamento Infra Painéis Áreas Comuns", inicio: "2025-06-02", fim: "2025-11-14", pct: 50 },
-        { id: 58, bloco: "Bloco 3", nome: "Fechamento Alimentadores/Circuitos – Áreas Comuns", inicio: "2025-09-01", fim: "2025-11-21", pct: 70, obs: "Aguardando miolos dos painéis" },
-        { id: 59, bloco: "Bloco 3", nome: "Instalação Painéis Padrão Light (Térreo)", inicio: "2025-11-03", fim: "2025-11-07", pct: 0 },
-        { id: 60, bloco: "Bloco 3", nome: "Infra Painéis Light (Térreo ↔ Subsolo)", inicio: "2025-11-10", fim: "2025-11-14", pct: 0 },
-        { id: 61, bloco: "Bloco 3", nome: "Lançamento Alimentadores Painéis Light", inicio: "2025-11-03", fim: "2025-11-10", pct: 0 },
-        { id: 62, bloco: "Bloco 3", nome: "Fechamento Alimentadores Painéis Light", inicio: "2025-11-17", fim: "2025-11-20", pct: 0 },
-        { id: 63, bloco: "Bloco 3", nome: "Ligação Barramentos → Painéis Light", inicio: "2025-08-01", fim: "2026-01-09", pct: 0 },
-        { id: 64, bloco: "Bloco 3", nome: "Infra Medição Remota Light", inicio: "2025-10-15", fim: "2025-10-30", pct: 60, obs: "Cabo furtado nas duas torres" },
-        { id: 65, bloco: "Bloco 3", nome: "Conclusão Barramentos Blindados", inicio: "2026-01-12", fim: "2026-01-16", pct: 80 },
-        { id: 66, bloco: "Bloco 3", nome: "Cofres do Busway", inicio: "2025-06-02", fim: "2025-07-18", pct: 90 },
-        { id: 68, bloco: "Bloco 3", nome: "Busway", inicio: "2025-06-06", fim: "2025-06-06", pct: 90 },
-        { id: 69, bloco: "Bloco 3", nome: "Luminárias Áreas Comuns", inicio: "2025-08-04", fim: "2025-08-23", pct: 0 },
-        { id: 70, bloco: "Bloco 3", nome: "Entregas para Qualidade (aptos)", inicio: "2025-09-10", fim: "2025-12-26", pct: 0 },
-        // Hidros/Gás (resumo)
-        { id: 71, bloco: "Bloco 3", nome: "Instalações Hidrossanitárias e Gás", inicio: "2025-06-02", fim: "2026-01-30", pct: 64 },
-        { id: 72, bloco: "Geral", nome: "Louças (aptos)", inicio: "2025-06-02", fim: "2025-06-13", pct: 95, obs: "Aguardando coberturas" },
-        { id: 75, bloco: "Geral", nome: "Metais/Acabamentos (aptos)", inicio: "2025-07-28", fim: "2025-09-15", pct: 40, obs: "Entregas parciais/desorganizadas; pendente canoplas e sifões" },
-        { id: 83, bloco: "Geral", nome: "Verificações Finais (geral)", inicio: "2026-01-05", fim: "2026-01-30", pct: 0 },
-        // Embasamento
-        { id: 84, bloco: "Embasamento", nome: "Embasamento – Térreo/Subsolo (geral)", inicio: "2025-06-02", fim: "2026-01-30", pct: 32 },
-        { id: 88, bloco: "Embasamento", nome: "Cabeamento p/ Iluminação Externa", inicio: "2025-10-06", fim: "2025-12-19", pct: 0, obs: "Aguardando definição de aditivo" },
-        { id: 93, bloco: "Embasamento", nome: "Luminárias de Emergência", inicio: "2025-11-17", fim: "2025-11-28", pct: 0, obs: "Aguardando compras/suprimentos" },
-        // Pacote Light
-        { id: 97, bloco: "Pacote Light", nome: "Barramentos Blindados (janela 1)", inicio: "2025-08-01", fim: "2025-08-07", pct: 80 },
-        { id: 98, bloco: "Pacote Light", nome: "Totalizadoras Light", inicio: "2025-08-04", fim: "2025-10-30", pct: 0 },
-        { id: 103, bloco: "Pacote Light", nome: "Lançamento Cabos Alimentadores Subsolo", inicio: "2025-08-08", fim: "2025-12-15", pct: 25 },
+        // Macro (se preferir fora dos blocos, mude para bloco:"Todos")
+        t(0,"Bloco 1","Atlântico Golf — Macro", "2025-06-02","2026-01-30",27,""),
+
+        // ===== BLOCO 1 =====
+        t(1,"Bloco 1","Bloco 1", "2025-06-02","2025-12-24",11,""),
+        t(2,"Bloco 1","Entrada de Energia", "2025-06-02","2025-12-24",11,""),
+        t(3,"Bloco 1","Alimentadores entre os Cofres e PDMD's", "2025-11-10","2025-12-24",0,"Aguardando cabos da Patrimar"),
+        t(4,"Bloco 1","Instalação de Painéis Padrão Light no Térreo", "2025-11-10","2025-12-24",0,"Aguardando chegada dos painéis"),
+        t(5,"Bloco 1","Infra. Interligação Painéis Light (Térreo ↔ Subsolo)", "2025-11-10","2025-12-24",0,""),
+        t(6,"Bloco 1","Lançamento Alimentadores Painéis Light", "2025-10-01","2025-10-07",0,"Depende de painéis"),
+        t(7,"Bloco 1","Fechamento Alimentadores Painéis Light", "2025-10-08","2025-10-13",0,"Depende de painéis"),
+        t(8,"Bloco 1","Conclusão dos Barramentos Blindados", "2025-08-01","2025-08-22",95,"Aguardando desobstrução do trechos"),
+        t(9,"Bloco 1","Ligação Barramentos Blindados → Painéis Light", "2025-08-01","2025-08-07",0,"Depende de painéis"),
+        t(10,"Bloco 1","Peças in Hold dos Barramentos", "2025-08-20","2025-09-05",0,"Aguardando"),
+
+        // Hidro/Gás Bloco 1
+        t(35,"Bloco 1","Instalações Hidrossanitárias e Gás", "2025-06-02","2026-01-30",58,""),
+        t(36,"Bloco 1","Louças dos Apartamentos", "2025-06-02","2025-06-13",95,"Aguardando Patrimar - Coberturas"),
+        t(37,"Bloco 1","Hidrômetros", "2025-06-02","2025-06-09",85,""),
+        t(38,"Bloco 1","Redutoras de Pressão", "2025-06-02","2025-06-16",83,"Aguardando"),
+        t(39,"Bloco 1","Metais e Acabamentos dos Aptos (incl. carenagens)", "2025-07-28","2025-09-15",40,""),
+        t(40,"Bloco 1","Bombas de Pressurização", "2025-10-30","2025-11-12",20,""),
+        t(41,"Bloco 1","Automáticos de Boia", "2025-10-15","2025-10-30",60,"Cabos Furtados em um trecho"),
+        t(42,"Bloco 1","Boia Mecânica — Reservatórios Superiores", "2025-09-15","2025-09-26",0,"Aguardando definição da Patrimar com relação ao projeto"),
+        t(44,"Bloco 1","Chaminés de Gás", "2025-07-21","2025-08-11",25,""),
+        t(46,"Bloco 1","Piscinas Coberturas", "2025-06-09","2025-08-28",90,""),
+        t(47,"Bloco 1","Verificações Finais", "2026-01-05","2026-01-30",0,""),
+
+        // ===== BLOCO 2 =====
+        t(12,"Bloco 2","Bloco 2", "2025-06-02","2026-01-30",54,""),
+        t(13,"Bloco 2","Instalações Elétricas/Infra Especiais/SPDA/Entrada de Energia", "2025-06-02","2026-01-16",54,""),
+        t(14,"Bloco 2","Interruptores e Tomadas — Apartamentos", "2025-06-02","2025-07-28",95,""),
+        t(15,"Bloco 2","Interruptores e Tomadas — Térreo e Telhado", "2025-06-30","2025-07-24",80,""),
+        t(16,"Bloco 2","QDL's Aptos (inclui fechamento de circuitos)", "2025-06-02","2025-09-26",70,""),
+        t(17,"Bloco 2","Alimentadores entre os Cofres e PDMD's", "2025-07-07","2025-07-19",0,""),
+        t(18,"Bloco 2","Alimentadores entre PDMD's e Aptos furtados", "2025-06-23","2025-12-19",30,""),
+        t(19,"Bloco 2","SPDA - Barra Chata", "2025-07-14","2025-10-17",60,"Aguardando liberação Patrimar"),
+        t(20,"Bloco 2","Caixas de Painéis de Áreas Comuns", "2025-06-02","2025-11-14",60,""),
+        t(21,"Bloco 2","Fechamento de Infra de Painéis — Áreas Comuns", "2025-06-02","2025-11-14",50,""),
+        t(22,"Bloco 2","Fechamento Alimentadores/Circuitos — Áreas", "2025-09-01","2025-11-21",70,"Aguardando miolos dos painéis"),
+        t(23,"Bloco 2","Instalação Painéis Padrão Light — Térreo", "2025-11-03","2025-11-07",0,""),
+        t(24,"Bloco 2","Infra. Interligação Painéis Light (Térreo ↔ Subsolo)", "2025-11-10","2025-11-14",0,""),
+        t(25,"Bloco 2","Lançamento Alimentadores Painéis Light", "2025-11-03","2025-11-10",0,"Depende dos cabos"),
+        t(26,"Bloco 2","Fechamento Alimentadores Painéis Light", "2025-11-17","2025-11-20",0,"Depende dos cabos"),
+        t(27,"Bloco 2","Conclusão Barramentos Blindados", "2025-08-01","2026-01-09",80,""),
+        t(28,"Bloco 2","Ligação Barramentos Blindados → Painéis Light", "2026-01-12","2026-01-16",0,""),
+        t(29,"Bloco 2","Cabeamentos — Automáticos de Boia (reserv. superiores)", "2025-10-15","2025-10-30",60,""),
+        t(30,"Bloco 2","Instalação de Luminárias — Áreas Comuns", "2025-10-06","2025-10-24",0,""),
+        t(31,"Bloco 2","Entregas para Qualidade — Apartamentos", "2025-09-10","2025-12-26",0,""),
+        t(32,"Bloco 2","Busway", "2025-06-02","2025-06-06",90,""),
+        t(33,"Bloco 2","Cofres do Busway", "2025-06-02","2025-07-18",90,""),
+        t(34,"Bloco 2","Infraestrutura de Medição Remota Light", "2025-06-02","2025-06-02",90,""),
+
+        // ===== BLOCO 3 =====
+        t(48,"Bloco 3","Bloco 3", "2025-06-02","2026-01-30",50,""),
+        t(49,"Bloco 3","Instalações Elétricas/Infra Especiais/SPDA/Entrada de Energia", "2025-06-02","2026-01-16",47,""),
+        t(50,"Bloco 3","Interruptores e Tomadas — Apartamentos", "2025-06-02","2025-07-28",95,""),
+        t(51,"Bloco 3","Interruptores e Tomadas — Térreo e Telhado", "2025-06-30","2025-07-24",80,""),
+        t(52,"Bloco 3","QDL's Aptos (inclui fechamento de circuitos)", "2025-06-02","2025-09-26",70,""),
+        t(53,"Bloco 3","Alimentadores entre os Cofres e PDMD's", "2025-07-07","2025-07-19",0,""),
+        t(54,"Bloco 3","Alimentadores entre PDMD's e Aptos furtados", "2025-06-23","2025-12-19",30,""),
+        t(55,"Bloco 3","SPDA - Barra Chata", "2025-07-14","2025-10-17",60,""),
+        t(56,"Bloco 3","Caixas de Painéis de Áreas Comuns", "2025-06-02","2025-11-14",80,""),
+        t(57,"Bloco 3","Fechamento de Infra de Painéis — Áreas Comuns", "2025-06-02","2025-11-14",50,""),
+        t(58,"Bloco 3","Fechamento Alimentadores/Circuitos — Áreas", "2025-09-01","2025-11-21",70,"Aguardando miolos dos painéis"),
+        t(59,"Bloco 3","Instalação Painéis Padrão Light — Térreo", "2025-11-03","2025-11-07",0,""),
+        t(60,"Bloco 3","Infra. Interligação Painéis Light (Térreo ↔ Subsolo)", "2025-11-10","2025-11-14",0,""),
+        t(61,"Bloco 3","Lançamento Alimentadores Painéis Light", "2025-11-03","2025-11-10",0,"Depende dos cabos"),
+        t(62,"Bloco 3","Fechamento Alimentadores Painéis Light", "2025-11-17","2025-11-20",0,"Depende dos cabos"),
+        t(63,"Bloco 3","Ligação Barramentos Blindados → Painéis Light", "2025-08-01","2026-01-09",0,""),
+        t(64,"Bloco 3","Infraestrutura de Medição Remota Light", "2025-10-15","2025-10-30",60,""),
+        t(65,"Bloco 3","Conclusão dos Barramentos Blindados", "2026-01-12","2026-01-16",80,""),
+        t(66,"Bloco 3","Cofres do Busway", "2025-06-02","2025-07-18",90,""),
+        t(67,"Bloco 3","Cabeamentos — Automáticos de Boia (reserv. superiores)", "2025-06-02","2025-06-02",90,""),
+        t(68,"Bloco 3","Busway", "2025-06-06","2025-06-06",90,""),
+        t(69,"Bloco 3","Instalação de Luminárias — Áreas Comuns", "2025-08-04","2025-08-23",0,""),
+        t(70,"Bloco 3","Entregas para Qualidade — Apartamentos", "2025-09-10","2025-12-26",0,""),
+
+        // Hidro/Gás Bloco 3
+        t(71,"Bloco 3","Instalações Hidrossanitárias e Gás", "2025-06-02","2026-01-30",64,""),
+        t(72,"Bloco 3","Louças dos Apartamentos", "2025-06-02","2025-06-13",95,"Aguardando Patrimar - Coberturas"),
+        t(73,"Bloco 3","Hidrômetros", "2025-06-02","2025-06-09",90,""),
+        t(74,"Bloco 3","Redutoras de Pressão", "2025-06-02","2025-06-16",80,"Aguardando"),
+        t(75,"Bloco 3","Metais e Acabamentos dos Aptos (incl. carenagens)", "2025-07-28","2025-09-15",40,""),
+        t(76,"Bloco 3","Bombas de Pressurização", "2025-10-30","2025-11-12",20,""),
+        t(77,"Bloco 3","Automáticos de Boia", "2025-10-15","2025-10-30",60,""),
+        t(78,"Bloco 3","Boia Mecânica — Reservatórios Superiores", "2025-09-15","2025-09-26",0,"Aguardando definição da Patrimar com relação ao projeto"),
+        t(80,"Bloco 3","Chaminés de Gás", "2025-07-21","2025-08-11",98,""),
+        t(82,"Bloco 3","Piscinas Coberturas", "2025-06-09","2025-08-28",90,""),
+        t(83,"Bloco 3","Verificações Finais", "2026-01-05","2026-01-30",0,""),
+
+        // ===== EMBASAMENTO (Térreo/Subsolo + Pacote Light + drenagem/AP) =====
+        t(84,"Embasamento","Embasamento — Térreo e Subsolo (geral)", "2025-06-02","2026-01-30",32,""),
+        t(85,"Embasamento","Instalações Elétricas/Infra Especiais/SPDA/Entrada", "2025-06-02","2026-01-30",32,""),
+        t(86,"Embasamento","Infra de Força interligada aos Painéis Elétricos", "2025-06-16","2025-08-02",80,""),
+        t(87,"Embasamento","Infra de Distribuição Elétrica", "2025-06-02","2025-08-02",80,""),
+        t(88,"Embasamento","Cabeamento de Distribuição p/ Iluminação Externa", "2025-10-06","2025-12-19",0,"Aguardando definição final do aditivo"),
+        t(89,"Embasamento","Caixas de Painéis Elétricos", "2025-06-02","2025-08-15",60,""),
+        t(90,"Embasamento","Lançamento Alimentadores Serviço Condominial", "2025-08-08","2025-08-25",25,""),
+        t(91,"Embasamento","Miolos de Painéis Elétricos", "2025-06-30","2025-10-10",60,""),
+        t(92,"Embasamento","Fechamento Circuitos de Força + Cabos de Distribuição", "2025-07-07","2025-10-17",10,""),
+        t(93,"Embasamento","Luminárias de Emergência", "2025-11-17","2025-11-28",0,"Aguardando compras e suprimentos"),
+        t(94,"Embasamento","Luminárias de Subsolo", "2025-06-02","2025-08-18",70,""),
+        t(95,"Embasamento","Luminárias Decorativas do Térreo", "2025-08-04","2025-09-20",0,"Não liberado"),
+        t(96,"Embasamento","Luminárias da Área Externa (piscinas/espelhos/etc.)", "2025-06-02","2025-09-19",20,""),
+
+        // Pacote Light no embasamento
+        t(97,"Embasamento","Barramentos Blindados (janela 1)", "2025-08-01","2025-08-07",80,""),
+        t(98,"Embasamento","Totalizadoras Light", "2025-08-04","2025-10-30",0,""),
+        t(99,"Embasamento","Infra Elétrica p/ Totalizadoras", "2025-08-04","2025-08-15",80,""),
+        t(100,"Embasamento","Cabos Alimentadores — Interlig. Painéis Light", "2025-08-22","2025-09-05",0,"Depende dos cabos"),
+        t(101,"Embasamento","Interlig. de Cabos — Caixa de Derivação dos Barramentos", "2025-08-08","2025-08-25",0,""),
+        t(102,"Embasamento","Alimentador de Serviço — Painel Light → QTA Serviço", "2025-09-22","2025-10-06",0,""),
+        t(103,"Embasamento","Lançamento Cabos — Alimentadores do Subsolo", "2025-08-08","2025-12-15",25,""),
+        t(104,"Embasamento","Verificações Finais", "2026-01-05","2026-01-30",0,""),
+        t(105,"Embasamento","Infra de Medição Remota Light", "2025-06-02","2025-08-11",30,"Aguardando compra do material (Patrimar)"),
+
+        // Hidro/Gás de embasamento (áreas técnicas e drenagem)
+        t(106,"Embasamento","Instalações Hidrossanitárias e Gás", "2025-06-02","2025-09-15",34,""),
+        t(107,"Embasamento","Área dos Reservatórios", "2025-06-02","2025-08-18",16,""),
+        t(108,"Embasamento","Bombas de Recalque — Água Fria", "2025-06-16","2025-06-30",0,""),
+        t(109,"Embasamento","Bombas de Recalque — Esgoto, AP e AS (incl. barrilete)", "2025-06-02","2025-07-31",0,""),
+        t(110,"Embasamento","Barrilete de Interligação — Reservatórios de Água Fria", "2025-07-01","2025-08-18",0,""),
+        t(111,"Embasamento","Rede de Recalque de Efluentes (Esgoto, AP e AS)", "2025-06-02","2025-07-31",50,""),
+        t(112,"Embasamento","Rede de Piscina e Espelho D'Água", "2025-06-02","2025-07-31",80,""),
+        t(113,"Embasamento","Ajustes em Redes de Gás (interf. com barramentos)", "2025-06-02","2025-06-30",30,""),
+        t(114,"Embasamento","Instalação de Louças — Áreas Comuns", "2025-08-04","2025-08-29",0,""),
+        t(115,"Embasamento","Instalação de Metais — Áreas Comuns", "2025-08-04","2025-08-29",0,""),
+        t(116,"Embasamento","Finalização da Entrada de Gás — Medida", "2025-08-11","2025-09-15",0,""),
+        t(117,"Embasamento","Verificações Finais (hidro/gás)", "2025-06-02","2025-07-08",0,""),
+        t(118,"Embasamento","Fechamento dos Ralos de Águas Pluviais (SS → Térreo)", "2025-06-16","2025-08-29",90,""),
+        t(120,"Embasamento","Acabamento das Caixas de Águas Pluviais", "2025-06-02","2025-06-02",80,""),
+        t(121,"Embasamento","Colocação de Tampões — Caixas de Águas Pluviais", "2025-08-04","2025-08-29",0,""),
+
+        // Gerais de embasamento / administrativos
+        t(122,"Embasamento","Aditivos Pendentes", "2025-06-02","2025-12-19",33,""),
+        t(134,"Embasamento","Material — Fornecimento Cliente", "2025-06-02","2025-06-02",0,""),
+        t(137,"Embasamento","Atividades da Quarterização (Serviços)", "2025-06-02","2025-11-21",0,"A definir com diretoria"),
       ];
 
-      // Status
+      // ===== Status =====
       function statusFrom(t){
         const o = (t.obs||"").toLowerCase();
         if (/(hold|não liberado)/.test(o)) return { k:"hold", label:"Hold/Não liberado" };
-        if (/(aguardando|depende|furto|furtado)/.test(o)) return { k:"wait", label:"Aguardando/Dependência" };
+        if (/(aguardando|depende|furtad)/.test(o)) return { k:"wait", label:"Aguardando/Dependência" };
         if ((new Date(t.fim) < TODAY) && (t.pct ?? 0) < 100) return { k:"overdue", label:"Em atraso" };
-        if (t.pct>=100) return { k:"done", label:"Concluído" };
+        if ((t.pct ?? 0) >= 100) return { k:"done", label:"Concluído" };
         return { k:"inprog", label:"Em execução" };
       }
-
       function barColor(t){
         const s = statusFrom(t).k;
-        if (s === "done") return COLORS.done;
-        if (s === "wait") return COLORS.wait;
-        if (s === "hold") return COLORS.hold;
+        if (s==="done") return COLORS.done;
+        if (s==="wait") return COLORS.wait;
+        if (s==="hold") return COLORS.hold;
         return COLORS.bar;
       }
 
-      // Barra Gantt
-      function GanttBar({ task, spanDays, compact }){
-        const start = d(task.inicio);
-        const end   = d(task.fim);
-        const left = clamp(((start - WINDOW_START)/MS)/spanDays * 100, -5, 105);
-        const width = clamp(((end - start)/MS)/spanDays * 100, 0.2, 120);
-        const pc = clamp(task.pct ?? 0, 0, 100);
-        const color = barColor(task);
-        const todayLeft = clamp(((TODAY - WINDOW_START)/MS)/spanDays * 100, -5, 105);
-        const overdue = (TODAY > end) && pc < 100;
-        const h = compact ? 22 : 28;
-
-        return (
-          <div className="group relative w-full">
-            {/* Linha de hoje */}
-            <div className="absolute" style={{left: `${todayLeft}%`, top: 0, bottom: 0}}>
-              <div style={{width:2, background:"#11182722", height:"100%"}} />
-            </div>
-
-            {/* Barra */}
-            <div className="relative rounded-xl shadow-sm" style={{
-              position: "relative",
-              left: `${left}%`,
-              width: `${width}%`,
-              background: color,
-              height: h,
-              outline: overdue ? `2px solid ${COLORS.risk}` : "none",
-            }}>
-              {/* Preenchimento de avanço */}
-              <div style={{ width: `${pc}%`, background: "#00000022", height: "100%", borderRadius: 12 }} />
-              <div className="absolute inset-0 flex items-center px-3 text-white text-[12px] font-medium drop-shadow">
-                <span className="truncate">{task.nome}</span>
-                <span className="ml-2 opacity-80">• {pc}%</span>
-              </div>
-            </div>
-
-            {/* Sub-infos */}
-            <div className="mt-1 text-[11px] text-slate-600 flex flex-wrap items-center gap-2">
-              <span>{fmt(start)} → {fmt(end)}</span>
-              {task.obs && <span className="italic">· {task.obs}</span>}
-              {overdue && (
-                <span className="px-2 py-0.5 rounded-full text-white" style={{background: COLORS.risk}}>
-                  {daysBetween(end, TODAY)}d em atraso
-                </span>
-              )}
-            </div>
-          </div>
-        );
+      // ===== Logo (auto) =====
+      const LOGO_CANDIDATES = ['./logo.jpg','./logo.png','./logo.svg','./assets/logo.jpg','./assets/logo.png','./assets/logo.svg'];
+      function LogoImage({ size = 48 }){
+        const [idx, setIdx] = useState(0);
+        const [src, setSrc] = useState(LOGO_CANDIDATES[0]);
+        useEffect(()=>{ setSrc(LOGO_CANDIDATES[0]); }, []);
+        const onError = () => { if (idx < LOGO_CANDIDATES.length - 1){ const n = idx+1; setIdx(n); setSrc(LOGO_CANDIDATES[n]); } else setSrc(''); };
+        if (!src) return null;
+        return <img src={src} onError={onError} alt="logo" style={{height:size,width:'auto'}}/>;
       }
 
-      // Cabeçalho de meses (sticky)
-      function MonthHeader({ spanDays }){
-        const months = [];
-        let cursor = new Date(WINDOW_START);
-        cursor.setDate(1);
-        while (cursor <= WINDOW_END){
-          const mStart = new Date(cursor);
-          const mEnd = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0);
-          const start = Math.max(mStart, WINDOW_START);
-          const end = Math.min(mEnd, WINDOW_END);
-          const width = ((end - start)/MS)/spanDays * 100;
-          months.push({ key: `${cursor.getFullYear()}-${cursor.getMonth()}`, label: mStart.toLocaleDateString("pt-BR", { month: "short", year: "2-digit" }), width });
-          cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
-        }
-        return (
-          <div className="flex w-full select-none sticky top-0 z-10" style={{gap:2, background: COLORS.card, borderBottom: `1px solid ${COLORS.border}`}}>
-            {months.map(m => (
-              <div key={m.key} className="text-[11px] uppercase tracking-wide text-slate-600 text-center" style={{width:`${m.width}%`}}>
-                {m.label}
-              </div>
-            ))}
-          </div>
-        );
-      }
-
-      // Legenda
+      // ===== Componentes UI =====
       function Legend(){
-        const Item = ({c, t}) => (
-          <div className="flex items-center gap-2 text-[12px]">
-            <span className="inline-block w-3 h-3 rounded" style={{background:c}} /> {t}
-          </div>
-        );
+        const Item = ({c,t}) => <div className="flex items-center gap-2 text-[12px]"><span className="inline-block w-3 h-3 rounded" style={{background:c}}/>{t}</div>;
         return (
           <div className="flex flex-wrap gap-4">
             <Item c={COLORS.bar} t="Em execução" />
@@ -232,72 +228,68 @@
         );
       }
 
-      const STATUS_ORDER = ["Todos","inprog","wait","hold","overdue","done"];
-      const STATUS_LABEL = { inprog: "Em execução", wait: "Aguardando", hold: "Hold", overdue: "Em atraso", done: "Concluído" };
-
-      // Candidatos de logo locais (tentativa automática, sem controles na UI)
-      const LOGO_CANDIDATES = [
-        './logo.jpg','./logo.png','./logo.svg',
-        './assets/logo.jpg','./assets/logo.png','./assets/logo.svg'
-      ];
-
-      // Componente simples que tenta exibir um logo local se existir
-      function LogoImage({ size = 48 }){
-        const [idx, setIdx] = useState(0);
-        const [src, setSrc] = useState(LOGO_CANDIDATES[0]);
-        useEffect(()=>{ setSrc(LOGO_CANDIDATES[0]); }, []);
-        const onError = () => {
-          if (idx < LOGO_CANDIDATES.length - 1){
-            const next = idx + 1;
-            setIdx(next);
-            setSrc(LOGO_CANDIDATES[next]);
-          } else {
-            setSrc(''); // não mostra nada se não encontrar
-          }
-        };
-        if (!src) return null;
-        return <img src={src} onError={onError} alt="logo" style={{height: size, width: 'auto'}} />;
-      }
-
-      // Filtros (sem qualquer item de logo)
-      function Filters({ all, onFilter, compact, setCompact, zoom, setZoom }){
+      function Filters({ onFilter, zoom, setZoom, compact, setCompact }){
         const [txt, setTxt] = useState("");
-        const [bloco, setBloco] = useState("Todos");
         const [status, setStatus] = useState("Todos");
-        const blocos = useMemo(() => ["Todos", ...Array.from(new Set(all.map(t=>t.bloco)))], [all]);
+        const [bloco, setBloco] = useState("Todos");
+        const BLOCO_OPTS = ["Todos","Bloco 1","Bloco 2","Bloco 3","Embasamento"];
+        const STATUS_ORDER = ["Todos","inprog","wait","hold","overdue","done"];
+        const STATUS_LABEL = { inprog:"Em execução", wait:"Aguardando", hold:"Hold", overdue:"Em atraso", done:"Concluído" };
 
         return (
           <div className="flex flex-wrap items-end gap-3">
             <div className="flex flex-col">
               <label className="text-[12px] text-slate-600 mb-1">Busca</label>
-              <input className="px-3 py-2 rounded-lg border outline-none" placeholder="Digite tarefa, observação..." value={txt} onChange={e=>setTxt(e.target.value)} />
+              <input className="px-3 py-2 rounded-lg border outline-none" placeholder="Tarefa ou observação..." value={txt} onChange={e=>setTxt(e.target.value)} />
             </div>
+
             <div className="flex flex-col">
               <label className="text-[12px] text-slate-600 mb-1">Bloco</label>
               <select className="px-3 py-2 rounded-lg border" value={bloco} onChange={e=>setBloco(e.target.value)}>
-                {blocos.map(b => <option key={b}>{b}</option>)}
+                {BLOCO_OPTS.map(b => <option key={b}>{b}</option>)}
               </select>
             </div>
+
             <div className="flex flex-col">
               <label className="text-[12px] text-slate-600 mb-1">Status</label>
               <select className="px-3 py-2 rounded-lg border" value={status} onChange={e=>setStatus(e.target.value)}>
                 {STATUS_ORDER.map(s => <option key={s} value={s}>{s==="Todos"?"Todos":STATUS_LABEL[s]}</option>)}
               </select>
             </div>
+
             <button className="px-4 py-2 rounded-xl bg-[#0e3a6d] text-white shadow" onClick={()=>onFilter({ txt, bloco, status })}>Aplicar</button>
             <button className="px-4 py-2 rounded-xl border" onClick={()=>{ setTxt(""); setBloco("Todos"); setStatus("Todos"); onFilter({ txt:"", bloco:"Todos", status:"Todos"}); }}>Limpar</button>
 
-            {/* Zoom */}
             <div className="flex items-center gap-2 ml-4">
               <label className="text-[12px] text-slate-600">Zoom</label>
               <input type="range" min={25} max={200} value={zoom} onChange={e=>setZoom(Number(e.target.value))} />
               <span className="text-[12px] text-slate-600">{zoom}%</span>
             </div>
 
-            {/* Modo compacto */}
             <label className="flex items-center gap-2 ml-2 text-[12px] text-slate-600">
               <input type="checkbox" checked={compact} onChange={e=>setCompact(e.target.checked)} /> Modo compacto
             </label>
+          </div>
+        );
+      }
+
+      function MonthHeader({ spanDays }){
+        const months = [];
+        let cursor = new Date(WINDOW_START); cursor.setDate(1);
+        while (cursor <= WINDOW_END){
+          const mStart = new Date(cursor);
+          const mEnd = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0);
+          const start = Math.max(mStart, WINDOW_START);
+          const end = Math.min(mEnd, WINDOW_END);
+          const width = ((end - start)/MS)/spanDays * 100;
+          months.push({ key: `${cursor.getFullYear()}-${cursor.getMonth()}`, label: mStart.toLocaleDateString("pt-BR",{ month:"short", year:"2-digit"}), width });
+          cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
+        }
+        return (
+          <div className="flex w-full select-none sticky top-0 z-10" style={{gap:2, background: COLORS.card, borderBottom: `1px solid ${COLORS.border}`}}>
+            {months.map(m => (
+              <div key={m.key} className="text-[11px] uppercase tracking-wide text-slate-600 text-center" style={{width:`${m.width}%`}}>{m.label}</div>
+            ))}
           </div>
         );
       }
@@ -320,18 +312,58 @@
         );
       }
 
+      // Coluna esquerda agora começa com o ID (pedido do Renato)
       function TaskLeft({ t }){
         const s = statusFrom(t);
-        const chipBg = { inprog: "#ebf3ff", wait: "#fff7e6", hold: "#f3e8ff", overdue: "#fee2e2", done: "#e6f7ec" }[s.k] || "#ebf3ff";
-        const chipTx = { inprog: "#1e3a8a", wait: "#92400e", hold: "#6b21a8", overdue: "#991b1b", done: "#166534" }[s.k] || "#1e3a8a";
+        const chipBg = { inprog:"#ebf3ff", wait:"#fff7e6", hold:"#f3e8ff", overdue:"#fee2e2", done:"#e6f7ec" }[s.k] || "#ebf3ff";
+        const chipTx = { inprog:"#1e3a8a", wait:"#92400e", hold:"#6b21a8", overdue:"#991b1b", done:"#166534" }[s.k] || "#1e3a8a";
         return (
-          <div className="pr-4">
-            <div className="text-[12px] text-slate-500">{t.bloco}</div>
-            <div className="font-medium flex items-center gap-2">
-              {t.nome}
-              <span className="px-2 py-0.5 rounded-full text-[11px]" style={{background: chipBg, color: chipTx}}>{s.label}</span>
+          <div className="pr-4 flex items-start gap-3">
+            <span className="inline-flex items-center justify-center rounded-lg px-2 py-1 text-xs font-semibold" style={{background:"#111827", color:"#fff", minWidth:36}}>
+              {t.id}
+            </span>
+            <div>
+              <div className="text-[12px] text-slate-500">{t.bloco}</div>
+              <div className="font-medium flex items-center gap-2">
+                {t.nome}
+                <span className="px-2 py-0.5 rounded-full text-[11px]" style={{background: chipBg, color: chipTx}}>{s.label}</span>
+              </div>
+              {t.obs && <div className="text-[12px] italic mt-1 text-slate-600">{t.obs}</div>}
             </div>
-            {t.obs && <div className="text-[12px] italic mt-1 text-slate-600">{t.obs}</div>}
+          </div>
+        );
+      }
+
+      function GanttBar({ task, spanDays, compact }){
+        const start = d(task.inicio), end = d(task.fim);
+        const left = clamp(((start - WINDOW_START)/MS)/spanDays * 100, -5, 105);
+        const width = clamp(((end - start)/MS)/spanDays * 100, 0.2, 120);
+        const pc = clamp(task.pct ?? 0, 0, 100);
+        const color = barColor(task);
+        const todayLeft = clamp(((TODAY - WINDOW_START)/MS)/spanDays * 100, -5, 105);
+        const overdue = (TODAY > end) && pc < 100;
+        const h = compact ? 22 : 28;
+
+        return (
+          <div className="group relative w-full">
+            <div className="absolute" style={{left: `${todayLeft}%`, top: 0, bottom: 0}}>
+              <div style={{width:2, background:"#11182722", height:"100%"}} />
+            </div>
+            <div className="relative rounded-xl shadow-sm" style={{
+              position:"relative", left:`${left}%`, width:`${width}%`, background: color, height:h,
+              outline: overdue ? `2px solid ${COLORS.risk}` : "none",
+            }}>
+              <div style={{ width: `${pc}%`, background: "#00000022", height: "100%", borderRadius: 12 }} />
+              <div className="absolute inset-0 flex items-center px-3 text-white text-[12px] font-medium drop-shadow">
+                <span className="truncate">{task.nome}</span>
+                <span className="ml-2 opacity-80">• {pc}%</span>
+              </div>
+            </div>
+            <div className="mt-1 text-[11px] text-slate-600 flex flex-wrap items-center gap-2">
+              <span>{fmt(start)} → {fmt(end)}</span>
+              {task.obs && <span className="italic">· {task.obs}</span>}
+              {overdue && <span className="px-2 py-0.5 rounded-full text-white" style={{background: COLORS.risk}}>{daysBetween(end, TODAY)}d em atraso</span>}
+            </div>
           </div>
         );
       }
@@ -361,7 +393,9 @@
             if (!map.has(t.bloco)) map.set(t.bloco, []);
             map.get(t.bloco).push(t);
           });
-          return Array.from(map.entries()).sort(([a],[b]) => a.localeCompare(b));
+          // manter ordem fixa de blocos
+          const order = ["Bloco 1","Bloco 2","Bloco 3","Embasamento"];
+          return order.filter(k=>map.has(k)).map(k=>[k,map.get(k)]);
         }, [filtered]);
 
         const progressoGeral = useMemo(() => {
@@ -389,24 +423,20 @@
               </header>
 
               <section className="mb-4">
-                <Filters all={tasks} onFilter={setFilter} compact={compact} setCompact={setCompact} zoom={zoom} setZoom={setZoom} />
+                <Filters onFilter={setFilter} zoom={zoom} setZoom={setZoom} compact={compact} setCompact={setCompact}/>
               </section>
 
               <section className="rounded-2xl shadow-xl border overflow-hidden" style={{background: COLORS.card, borderColor: COLORS.border}}>
-                <MonthHeader spanDays={Math.max(1, Math.round((WINDOW_END - WINDOW_START) / MS) / (zoom / 100))} />
-
+                <MonthHeader spanDays={spanDays} />
                 {groups.map(([bloco, itens]) => (
                   <div key={bloco} className="border-b" style={{borderColor: COLORS.border}}>
-                    <div className="flex items-center justify-between">
-                      <GroupHeader title={bloco} tasks={itens} />
-                    </div>
+                    <GroupHeader title={bloco} tasks={itens} />
                     <div className="divide-y" style={{borderColor: COLORS.border}}>
                       {itens.map(t => (
-                        <div key={t.id} className="p-3 grid" style={{gridTemplateColumns: '260px 1fr'}}>
+                        <div key={t.id} className="p-3 grid" style={{gridTemplateColumns: '80px 280px 1fr'}}>
+                          <div className="flex items-start"><span className="inline-flex items-center justify-center rounded-lg px-2 py-1 text-xs font-semibold" style={{background:"#111827", color:"#fff", minWidth:36}}>{t.id}</span></div>
                           <TaskLeft t={t} />
-                          <div>
-                            <GanttBar task={t} spanDays={Math.max(1, Math.round((WINDOW_END - WINDOW_START) / MS) / (zoom / 100))} compact={compact} />
-                          </div>
+                          <GanttBar task={t} spanDays={spanDays} compact={compact} />
                         </div>
                       ))}
                     </div>
@@ -454,9 +484,8 @@
               </section>
 
               <footer className="mt-8 text-[12px] text-slate-500">
-                <div>• Para exibir um logo, adicione <b>logo.jpg</b> (ou <code>logo.png</code>/<code>logo.svg</code>) na raiz do repo. Alternativamente use <code>assets/logo.*</code>.</div>
-                <div>• O app tenta carregar automaticamente nessas ordens; se não encontrar, o espaço do logo permanece vazio.</div>
-                <div>• GitHub Pages: publique como <b>index.html</b> na raiz (ou em <code>/docs</code>) e ative em <b>Settings → Pages</b>.</div>
+                <div>• Para exibir um logo, adicione <b>logo.jpg</b> (ou <code>logo.png</code>/<code>logo.svg</code>) na raiz do repo (ou em <code>/assets</code>).</div>
+                <div>• Publicação: GitHub Pages (arquivo <b>index.html</b> na raiz ou em <code>/docs</code>).</div>
               </footer>
             </div>
           </div>
@@ -468,3 +497,4 @@
     </script>
   </body>
 </html>
+
