@@ -79,6 +79,7 @@
       <h3>Histórico recente</h3>
       <div class="meta">Carregado do JSON embutido</div>
       <pre>—</pre>
+      <div class="meta" id="selftests">Self-tests: executando…</div>
     </section>
   </main>
 
@@ -93,96 +94,103 @@
     <div class="legendTickets" id="legendTickets"></div>
   </footer>
 
-  <!-- Atualização 21/09 (Luciene): pendências anteriores resolvidas; novas pendências B2 303 (EL: falta disjuntor QDL) e B2 405 (EL: faltando instalação de circuito); conclusão total EL/HI nos pavs 18–21. -->
+  <!-- Atualização 21/09 (Luciene): pendências resolvidas; B2 303 e 405 encerradas; conclusão total EL/HI nos pavs 18–21. -->
   <script id="DATA_JSON" type="application/json">{
-  "schema":"v4","version":1,
-  "meta":{"createdAt":"2025-09-21T00:00:00.000Z","updatedAt":"2025-09-21T13:15:00.000Z","author":"Luciene"},
-  "snapshot":{"current":"eletrica","quadros":{"eletrica":{"nome":"Equipe Elétrica","blocos":{"Bloco 1":[],"Bloco 2":[]},"chamados":[]},"hidraulica":{"nome":"Equipe Hidráulica","blocos":{"Bloco 1":[],"Bloco 2":[]},"chamados":[]}}},
-  "history":[
-    {"id":"EV-EL-B2-101","ts":"2025-09-21T00:00:01.000Z","who":"Renato/IA","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-EL-B2-102","ts":"2025-09-21T00:00:02.000Z","who":"Renato/IA","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":1,"to":"pm"}},
-    {"id":"EV-EL-B2-102-CH","ts":"2025-09-21T00:00:03.000Z","who":"Renato/IA","type":"addChamado","data":{"quadro":"eletrica","chamado":{"id":"CH-102-EL","bloco":"Bloco 2","pavIndex":20,"aptIndex":1,"texto":"Pendente — roubo de cabos"}}},
-    {"id":"EV-EL-B2-103","ts":"2025-09-21T00:00:04.000Z","who":"Renato/IA","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":2,"to":"pm"}},
-    {"id":"EV-EL-B2-103-CH","ts":"2025-09-21T00:00:05.000Z","who":"Renato/IA","type":"addChamado","data":{"quadro":"eletrica","chamado":{"id":"CH-103-EL","bloco":"Bloco 2","pavIndex":20,"aptIndex":2,"texto":"Entrega parcial — 50%"}}},
+    "schema":"v4","version":1,
+    "meta":{"createdAt":"2025-09-21T00:00:00.000Z","updatedAt":"2025-09-21T13:45:00.000Z","author":"Luciene"},
+    "snapshot":{"current":"eletrica","quadros":{"eletrica":{"nome":"Equipe Elétrica","blocos":{"Bloco 1":[],"Bloco 2":[]},"chamados":[]},"hidraulica":{"nome":"Equipe Hidráulica","blocos":{"Bloco 1":[],"Bloco 2":[]},"chamados":[]}}},
+    "history":[
+      {"id":"EV-EL-B2-101","ts":"2025-09-21T00:00:01.000Z","who":"Renato/IA","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-EL-B2-102","ts":"2025-09-21T00:00:02.000Z","who":"Renato/IA","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":1,"to":"pm"}},
+      {"id":"EV-EL-B2-102-CH","ts":"2025-09-21T00:00:03.000Z","who":"Renato/IA","type":"addChamado","data":{"quadro":"eletrica","chamado":{"id":"CH-102-EL","bloco":"Bloco 2","pavIndex":20,"aptIndex":1,"texto":"Pendente — roubo de cabos"}}},
+      {"id":"EV-EL-B2-103","ts":"2025-09-21T00:00:04.000Z","who":"Renato/IA","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":2,"to":"pm"}},
+      {"id":"EV-EL-B2-103-CH","ts":"2025-09-21T00:00:05.000Z","who":"Renato/IA","type":"addChamado","data":{"quadro":"eletrica","chamado":{"id":"CH-103-EL","bloco":"Bloco 2","pavIndex":20,"aptIndex":2,"texto":"Entrega parcial — 50%"}}},
 
-    {"id":"EV-EL-B2-102-RESOLVE","ts":"2025-09-21T11:50:00.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-EL-B2-102-DELCH","ts":"2025-09-21T11:50:05.000Z","who":"Luciene","type":"delChamado","data":{"quadro":"eletrica","id":"CH-102-EL"}},
-    {"id":"EV-EL-B2-103-RESOLVE","ts":"2025-09-21T11:50:10.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-EL-B2-103-DELCH","ts":"2025-09-21T11:50:15.000Z","who":"Luciene","type":"delChamado","data":{"quadro":"eletrica","id":"CH-103-EL"}},
+      {"id":"EV-EL-B2-102-RESOLVE","ts":"2025-09-21T11:50:00.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-EL-B2-102-DELCH","ts":"2025-09-21T11:50:05.000Z","who":"Luciene","type":"delChamado","data":{"quadro":"eletrica","id":"CH-102-EL"}},
+      {"id":"EV-EL-B2-103-RESOLVE","ts":"2025-09-21T11:50:10.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":20,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-EL-B2-103-DELCH","ts":"2025-09-21T11:50:15.000Z","who":"Luciene","type":"delChamado","data":{"quadro":"eletrica","id":"CH-103-EL"}},
 
-    {"id":"EV-HI-B2-403-CH","ts":"2025-09-21T11:55:00.000Z","who":"Luciene","type":"addChamado","data":{"quadro":"hidraulica","chamado":{"id":"CH-403-HI","bloco":"Bloco 2","pavIndex":17,"aptIndex":2,"texto":"Rompimento de tubulação — fechado para manutenção"}}},
-    {"id":"EV-HI-B2-403-SET","ts":"2025-09-21T11:55:05.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":17,"aptIndex":2,"to":"nc"}},
-    {"id":"EV-HI-B2-603-CH","ts":"2025-09-21T11:56:00.000Z","who":"Luciene","type":"addChamado","data":{"quadro":"hidraulica","chamado":{"id":"CH-603-HI","bloco":"Bloco 2","pavIndex":15,"aptIndex":2,"texto":"Sumiram metais da bancada"}}},
-    {"id":"EV-HI-B2-603-SET","ts":"2025-09-21T11:56:05.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":15,"aptIndex":2,"to":"pm"}},
+      {"id":"EV-HI-B2-403-CH","ts":"2025-09-21T11:55:00.000Z","who":"Luciene","type":"addChamado","data":{"quadro":"hidraulica","chamado":{"id":"CH-403-HI","bloco":"Bloco 2","pavIndex":17,"aptIndex":2,"texto":"Rompimento de tubulação — fechado para manutenção"}}},
+      {"id":"EV-HI-B2-403-SET","ts":"2025-09-21T11:55:05.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":17,"aptIndex":2,"to":"nc"}},
+      {"id":"EV-HI-B2-603-CH","ts":"2025-09-21T11:56:00.000Z","who":"Luciene","type":"addChamado","data":{"quadro":"hidraulica","chamado":{"id":"CH-603-HI","bloco":"Bloco 2","pavIndex":15,"aptIndex":2,"texto":"Sumiram metais da bancada"}}},
+      {"id":"EV-HI-B2-603-SET","ts":"2025-09-21T11:56:05.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":15,"aptIndex":2,"to":"pm"}},
 
-    {"id":"EV-EL-B2-303-CH","ts":"2025-09-21T13:05:00.000Z","who":"Luciene","type":"addChamado","data":{"quadro":"eletrica","chamado":{"id":"CH-303-EL","bloco":"Bloco 2","pavIndex":18,"aptIndex":2,"texto":"Falta disjuntor QDL"}}},
-    {"id":"EV-EL-B2-303-SET","ts":"2025-09-21T13:05:05.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":18,"aptIndex":2,"to":"pm"}},
+      {"id":"EV-EL-B2-303-CH","ts":"2025-09-21T13:05:00.000Z","who":"Luciene","type":"addChamado","data":{"quadro":"eletrica","chamado":{"id":"CH-303-EL","bloco":"Bloco 2","pavIndex":18,"aptIndex":2,"texto":"Falta disjuntor QDL"}}},
+      {"id":"EV-EL-B2-303-SET","ts":"2025-09-21T13:05:05.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":18,"aptIndex":2,"to":"pm"}},
+      {"id":"EV-EL-B2-405-CH","ts":"2025-09-21T13:06:00.000Z","who":"Luciene","type":"addChamado","data":{"quadro":"eletrica","chamado":{"id":"CH-405-EL","bloco":"Bloco 2","pavIndex":17,"aptIndex":4,"texto":"Faltando instalação de circuito (coluna 05)"}}},
 
-    {"id":"EV-EL-B2-405-CH","ts":"2025-09-21T13:06:00.000Z","who":"Luciene","type":"addChamado","data":{"quadro":"eletrica","chamado":{"id":"CH-405-EL","bloco":"Bloco 2","pavIndex":17,"aptIndex":4,"texto":"Faltando instalação de circuito (coluna 05)"}}},
+      {"id":"EV-ALL-P18-B1-OK","ts":"2025-09-21T13:08:00.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":3,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P18-B1-OK2","ts":"2025-09-21T13:08:00.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":3,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P18-B1-OK3","ts":"2025-09-21T13:08:00.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":3,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P18-B1-OK4","ts":"2025-09-21T13:08:00.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":3,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P19-B1-OK1","ts":"2025-09-21T13:08:01.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":2,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P19-B1-OK2","ts":"2025-09-21T13:08:01.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":2,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P19-B1-OK3","ts":"2025-09-21T13:08:01.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":2,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P19-B1-OK4","ts":"2025-09-21T13:08:01.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":2,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P20-B1-OK1","ts":"2025-09-21T13:08:02.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":1,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P20-B1-OK2","ts":"2025-09-21T13:08:02.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":1,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P20-B1-OK3","ts":"2025-09-21T13:08:02.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":1,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P20-B1-OK4","ts":"2025-09-21T13:08:02.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":1,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P21-B1-OK1","ts":"2025-09-21T13:08:03.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":0,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P21-B1-OK2","ts":"2025-09-21T13:08:03.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":0,"aptIndex":1,"to":"ok"}},
 
-    
-    {"id":"EV-ALL-P18-B1-OK","ts":"2025-09-21T13:08:00.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":3,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P18-B1-OK2","ts":"2025-09-21T13:08:00.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":3,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P18-B1-OK3","ts":"2025-09-21T13:08:00.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":3,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P18-B1-OK4","ts":"2025-09-21T13:08:00.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":3,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P19-B1-OK1","ts":"2025-09-21T13:08:01.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":2,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P19-B1-OK2","ts":"2025-09-21T13:08:01.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":2,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P19-B1-OK3","ts":"2025-09-21T13:08:01.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":2,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P19-B1-OK4","ts":"2025-09-21T13:08:01.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":2,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P20-B1-OK1","ts":"2025-09-21T13:08:02.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":1,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P20-B1-OK2","ts":"2025-09-21T13:08:02.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":1,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P20-B1-OK3","ts":"2025-09-21T13:08:02.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":1,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P20-B1-OK4","ts":"2025-09-21T13:08:02.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":1,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P21-B1-OK1","ts":"2025-09-21T13:08:03.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":0,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P21-B1-OK2","ts":"2025-09-21T13:08:03.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 1","pavIndex":0,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P18-B2-OK1","ts":"2025-09-21T13:08:04.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":3,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P18-B2-OK2","ts":"2025-09-21T13:08:04.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":3,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P18-B2-OK3","ts":"2025-09-21T13:08:04.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":3,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P18-B2-OK4","ts":"2025-09-21T13:08:04.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":3,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P19-B2-OK1","ts":"2025-09-21T13:08:05.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":2,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P19-B2-OK2","ts":"2025-09-21T13:08:05.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":2,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P19-B2-OK3","ts":"2025-09-21T13:08:05.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":2,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P19-B2-OK4","ts":"2025-09-21T13:08:05.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":2,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P20-B2-OK1","ts":"2025-09-21T13:08:06.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":1,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P20-B2-OK2","ts":"2025-09-21T13:08:06.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":1,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P20-B2-OK3","ts":"2025-09-21T13:08:06.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":1,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P20-B2-OK4","ts":"2025-09-21T13:08:06.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":1,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P21-B2-OK1","ts":"2025-09-21T13:08:07.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":0,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P21-B2-OK2","ts":"2025-09-21T13:08:07.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":0,"aptIndex":1,"to":"ok"}},
 
-    {"id":"EV-ALL-P18-B2-OK1","ts":"2025-09-21T13:08:04.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":3,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P18-B2-OK2","ts":"2025-09-21T13:08:04.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":3,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P18-B2-OK3","ts":"2025-09-21T13:08:04.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":3,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P18-B2-OK4","ts":"2025-09-21T13:08:04.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":3,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P19-B2-OK1","ts":"2025-09-21T13:08:05.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":2,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P19-B2-OK2","ts":"2025-09-21T13:08:05.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":2,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P19-B2-OK3","ts":"2025-09-21T13:08:05.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":2,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P19-B2-OK4","ts":"2025-09-21T13:08:05.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":2,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P20-B2-OK1","ts":"2025-09-21T13:08:06.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":1,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P20-B2-OK2","ts":"2025-09-21T13:08:06.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":1,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P20-B2-OK3","ts":"2025-09-21T13:08:06.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":1,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P20-B2-OK4","ts":"2025-09-21T13:08:06.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":1,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P21-B2-OK1","ts":"2025-09-21T13:08:07.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":0,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P21-B2-OK2","ts":"2025-09-21T13:08:07.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":0,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P18-B1-OK-HI1","ts":"2025-09-21T13:09:00.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":3,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P18-B1-OK-HI2","ts":"2025-09-21T13:09:00.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":3,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P18-B1-OK-HI3","ts":"2025-09-21T13:09:00.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":3,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P18-B1-OK-HI4","ts":"2025-09-21T13:09:00.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":3,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P19-B1-OK-HI1","ts":"2025-09-21T13:09:01.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":2,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P19-B1-OK-HI2","ts":"2025-09-21T13:09:01.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":2,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P19-B1-OK-HI3","ts":"2025-09-21T13:09:01.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":2,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P19-B1-OK-HI4","ts":"2025-09-21T13:09:01.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":2,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P20-B1-OK-HI1","ts":"2025-09-21T13:09:02.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":1,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P20-B1-OK-HI2","ts":"2025-09-21T13:09:02.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":1,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P20-B1-OK-HI3","ts":"2025-09-21T13:09:02.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":1,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P20-B1-OK-HI4","ts":"2025-09-21T13:09:02.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":1,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P21-B1-OK-HI1","ts":"2025-09-21T13:09:03.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":0,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P21-B1-OK-HI2","ts":"2025-09-21T13:09:03.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":0,"aptIndex":1,"to":"ok"}},
 
-    {"id":"EV-ALL-P18-B1-OK-HI1","ts":"2025-09-21T13:09:00.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":3,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P18-B1-OK-HI2","ts":"2025-09-21T13:09:00.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":3,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P18-B1-OK-HI3","ts":"2025-09-21T13:09:00.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":3,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P18-B1-OK-HI4","ts":"2025-09-21T13:09:00.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":3,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P19-B1-OK-HI1","ts":"2025-09-21T13:09:01.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":2,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P19-B1-OK-HI2","ts":"2025-09-21T13:09:01.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":2,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P19-B1-OK-HI3","ts":"2025-09-21T13:09:01.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":2,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P19-B1-OK-HI4","ts":"2025-09-21T13:09:01.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":2,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P20-B1-OK-HI1","ts":"2025-09-21T13:09:02.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":1,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P20-B1-OK-HI2","ts":"2025-09-21T13:09:02.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":1,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P20-B1-OK-HI3","ts":"2025-09-21T13:09:02.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":1,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P20-B1-OK-HI4","ts":"2025-09-21T13:09:02.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":1,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P21-B1-OK-HI1","ts":"2025-09-21T13:09:03.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":0,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P21-B1-OK-HI2","ts":"2025-09-21T13:09:03.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 1","pavIndex":0,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P18-B2-OK-HI1","ts":"2025-09-21T13:09:04.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":3,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P18-B2-OK-HI2","ts":"2025-09-21T13:09:04.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":3,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P18-B2-OK-HI3","ts":"2025-09-21T13:09:04.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":3,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P18-B2-OK-HI4","ts":"2025-09-21T13:09:04.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":3,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P19-B2-OK-HI1","ts":"2025-09-21T13:09:05.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":2,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P19-B2-OK-HI2","ts":"2025-09-21T13:09:05.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":2,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P19-B2-OK-HI3","ts":"2025-09-21T13:09:05.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":2,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P19-B2-OK-HI4","ts":"2025-09-21T13:09:05.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":2,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P20-B2-OK-HI1","ts":"2025-09-21T13:09:06.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":1,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P20-B2-OK-HI2","ts":"2025-09-21T13:09:06.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":1,"aptIndex":1,"to":"ok"}},
+      {"id":"EV-ALL-P20-B2-OK-HI3","ts":"2025-09-21T13:09:06.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":1,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-ALL-P20-B2-OK-HI4","ts":"2025-09-21T13:09:06.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":1,"aptIndex":3,"to":"ok"}},
+      {"id":"EV-ALL-P21-B2-OK-HI1","ts":"2025-09-21T13:09:07.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":0,"aptIndex":0,"to":"ok"}},
+      {"id":"EV-ALL-P21-B2-OK-HI2","ts":"2025-09-21T13:09:07.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":0,"aptIndex":1,"to":"ok"}},
 
-    {"id":"EV-ALL-P18-B2-OK-HI1","ts":"2025-09-21T13:09:04.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":3,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P18-B2-OK-HI2","ts":"2025-09-21T13:09:04.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":3,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P18-B2-OK-HI3","ts":"2025-09-21T13:09:04.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":3,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P18-B2-OK-HI4","ts":"2025-09-21T13:09:04.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":3,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P19-B2-OK-HI1","ts":"2025-09-21T13:09:05.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":2,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P19-B2-OK-HI2","ts":"2025-09-21T13:09:05.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":2,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P19-B2-OK-HI3","ts":"2025-09-21T13:09:05.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":2,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P19-B2-OK-HI4","ts":"2025-09-21T13:09:05.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":2,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P20-B2-OK-HI1","ts":"2025-09-21T13:09:06.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":1,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P20-B2-OK-HI2","ts":"2025-09-21T13:09:06.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":1,"aptIndex":1,"to":"ok"}},
-    {"id":"EV-ALL-P20-B2-OK-HI3","ts":"2025-09-21T13:09:06.200Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":1,"aptIndex":2,"to":"ok"}},
-    {"id":"EV-ALL-P20-B2-OK-HI4","ts":"2025-09-21T13:09:06.300Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":1,"aptIndex":3,"to":"ok"}},
-    {"id":"EV-ALL-P21-B2-OK-HI1","ts":"2025-09-21T13:09:07.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":0,"aptIndex":0,"to":"ok"}},
-    {"id":"EV-ALL-P21-B2-OK-HI2","ts":"2025-09-21T13:09:07.100Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":0,"aptIndex":1,"to":"ok"}}
-  ],
-  "__embedded":true
-}</script>
+      {"id":"EV-EL-B2-303-RESOLVE","ts":"2025-09-21T13:40:00.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"eletrica","bloco":"Bloco 2","pavIndex":18,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-EL-B2-303-DELCH","ts":"2025-09-21T13:40:05.000Z","who":"Luciene","type":"delChamado","data":{"quadro":"eletrica","id":"CH-303-EL"}},
+      {"id":"EV-EL-B2-405-DELCH","ts":"2025-09-21T13:40:10.000Z","who":"Luciene","type":"delChamado","data":{"quadro":"eletrica","id":"CH-405-EL"}},
+
+      {"id":"EV-HI-B2-403-RESOLVE","ts":"2025-09-21T13:41:00.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":17,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-HI-B2-403-DELCH","ts":"2025-09-21T13:41:05.000Z","who":"Luciene","type":"delChamado","data":{"quadro":"hidraulica","id":"CH-403-HI"}},
+      {"id":"EV-HI-B2-603-RESOLVE","ts":"2025-09-21T13:41:30.000Z","who":"Luciene","type":"setStatus","data":{"quadro":"hidraulica","bloco":"Bloco 2","pavIndex":15,"aptIndex":2,"to":"ok"}},
+      {"id":"EV-HI-B2-603-DELCH","ts":"2025-09-21T13:41:35.000Z","who":"Luciene","type":"delChamado","data":{"quadro":"hidraulica","id":"CH-603-HI"}}
+    ],
+    "__embedded": true
+  }</script>
   <script>
     // ---- Config estática (somente visualização) ----
     const PAV=21, APT=4, LABEL={nv:"NV",ok:"OK",pl:"PL",pm:"PM",nc:"NC",xx:"--"};
@@ -190,7 +198,7 @@
     const aptNumber=(p,a)=>`${p}${(a+1).toString().padStart(2,'0')}`;
     const emptyMatriz=()=>Array.from({length:PAV},(_,i)=>Array.from({length:APT},(_,a)=>a<aptosNoPav(i)?'nv':'xx'));
     const byId = id=>document.getElementById(id);
-    function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m])); }
+    function escapeHTML(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;','\'':'&#39;'}[m])); }
 
     function defaultBundle(){
       return {
@@ -230,12 +238,15 @@
         if(type==='setStatus'){
           const { quadro, bloco, pavIndex, aptIndex, to } = data||{};
           const q=s.quadros[quadro];
-          if(q && q.blocos[bloco] && q.blocos[bloco][pavIndex] && q.blocos[bloco][pavIndex][aptIndex]){
+          if(q && q.blocos[bloco] && q.blocos[bloco][pavIndex] && q.blocos[bloco][pavIndex][aptIndex]!=null && ['nv','ok','pl','pm','nc'].includes(to)){
             q.blocos[bloco][pavIndex][aptIndex]=to;
           }
         } else if(type==='addChamado'){
           const { quadro, chamado } = data||{}; const q=s.quadros[quadro];
           if(q && chamado && chamado.id){ if(!q.chamados.some(c=>c.id===chamado.id)){ q.chamados.push(chamado); } }
+        } else if(type==='delChamado'){
+          const { quadro, id } = data||{}; const q=s.quadros[quadro];
+          if(q){ q.chamados = (q.chamados||[]).filter(c=>c.id!==id); }
         }
       });
       return s;
@@ -252,6 +263,7 @@
         const events = dedupEvents(Array.isArray(b.history)? b.history : []);
         applyEvents(out.snapshot, events);
         out.history=events;
+        out.__embedded = true;
         return out;
       }catch(_){ return base; }
     }
@@ -265,7 +277,7 @@
       wrap.querySelectorAll('.card').forEach(el=>el.remove());
 
       const dataTag=document.getElementById('DATA_JSON');
-      const raw = dataTag && dataTag.textContent ? JSON.parse(dataTag.textContent) : defaultBundle();
+      let raw; try{ raw = dataTag && dataTag.textContent ? JSON.parse(dataTag.textContent) : defaultBundle(); }catch(e){ raw=defaultBundle(); console.error('JSON inválido no DATA_JSON:', e); }
       const bundle = normalizeBundle(raw);
 
       function renderQuadro(quadroKey){
@@ -332,6 +344,35 @@
       const last= (bundle.history||[]).slice(-10);
       aside.querySelector('pre').textContent = last.length ? last.map(e=>`${e.ts} · ${e.type} · ${e.who||''}`).join('\n') : 'Sem eventos.';
       aside.querySelector('.meta').innerHTML = `Autor: <strong>${escapeHTML(bundle.meta.author||'-')}</strong> • Atualizado: ${escapeHTML(bundle.meta.updatedAt||'-')}`;
+
+      // ---- Self-tests (sanity) ----
+      (function selfTests(){
+        const out=[]; let okCount=0;
+        const snap=bundle.snapshot;
+        function assert(name, cond){ if(!cond){ out.push(`✗ ${name}`);} else { okCount++; } }
+        // Test 1: JSON válido com schema v4
+        assert('JSON carrega e schema v4', snap && (bundle.schema==='v4' || bundle.schema==null));
+        // Test 2: Sem chamados abertos (todas pendências resolvidas)
+        const totalChamados=(snap.quadros.eletrica.chamados?.length||0)+(snap.quadros.hidraulica.chamados?.length||0);
+        assert('Sem chamados abertos', totalChamados===0);
+        // Test 3: Alguns pontos de controle OK nos pavs 18–21
+        const checks=[
+          ['eletrica','Bloco 2',20,0], // 101
+          ['eletrica','Bloco 2',20,1], // 102
+          ['eletrica','Bloco 2',20,2], // 103
+          ['eletrica','Bloco 1',3,0],  // pav 18
+          ['eletrica','Bloco 2',3,3],  // pav 18
+          ['hidraulica','Bloco 1',0,1], // pav 21
+          ['hidraulica','Bloco 2',2,2]  // pav 19
+        ];
+        checks.forEach(([q,b,i,a])=>{
+          const st=snap.quadros[q].blocos[b][i][a];
+          assert(`Status OK em ${q}/${b}/pavIndex:${i}/aptIndex:${a}`, st==='ok');
+        });
+        const el=document.getElementById('selftests');
+        if(out.length){ el.textContent = `Self-tests: FALHOU — ${out.length} erro(s)\n`+out.join('\n'); el.style.color='#b91c1c'; }
+        else { el.textContent = `Self-tests: OK — ${okCount} asserções`; el.style.color='#065f46'; }
+      })();
     }
 
     render();
