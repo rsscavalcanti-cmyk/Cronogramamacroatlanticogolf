@@ -4,13 +4,12 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quadro Branco — Entregas (Elétrica / Hidráulica)</title>
-  <meta name="description" content="TV-ready. Dois quadros: Equipe Elétrica e Equipe Hidráulica. Clique alterna status, chamados por apto, exportar JSON. Logo fixa. Sem import (atualização via GitHub). Versão com limpeza automática de cache/localStorage (BUILD_HASH)." />
+  <meta name="description" content="TV-ready. Dois quadros: Equipe Elétrica e Equipe Hidráulica. Clique alterna status, chamados por apto. Exporta JSON e também BAIXA O HTML COMPLETO com os dados embutidos. Logo fixa. Sem import (atualização via GitHub)." />
   <style>
     :root{
       --bg:#ffffff; --text:#0f172a; --muted:#475569; --line:#e2e8f0; --head:#f8fafc;
       --ok:#16a34a; --pl:#eab308; --pm:#f97316; --nc:#ef4444; --nv:#cbd5e1; --btn:#0ea5e9;
-      --badge:#ffffff; --badgeText:#0f172a;
-      --segBg:#e6f4ff; --segBorder:#b6e0ff; --segText:#075985;
+      --badge:#ffffff; --badgeText:#0f172a; --segBg:#e6f4ff; --segBorder:#b6e0ff; --segText:#075985;
     }
     *{box-sizing:border-box}
     html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font:16px/1.35 Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
@@ -19,7 +18,6 @@
     .brand img{height:36px;width:auto;object-fit:contain}
     .brand h1{margin:0;font-size:22px;font-weight:800;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-    /* Segmented control para alternar quadros */
     .seg{display:flex;border:2px solid var(--segBorder);border-radius:12px;overflow:hidden}
     .seg button{appearance:none;border:0;background:transparent;padding:8px 12px;font-weight:700;color:var(--segText);cursor:pointer}
     .seg button.active{background:var(--segBg)}
@@ -35,7 +33,6 @@
     .kpi{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 10px 0}
     .chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);padding:6px 10px;border-radius:999px;font-size:14px;color:var(--muted);background:var(--head)}
 
-    /* grade vertical 21 x (até) 4 aptos */
     .grid{display:grid;grid-template-columns:76px repeat(4, 1fr);gap:8px}
     .cell,.head{border:1px solid var(--line);border-radius:12px;padding:0;text-align:center}
     .head{background:var(--head);font-weight:700;padding:10px}
@@ -55,7 +52,6 @@
     .apto.disabled{background:transparent;border:1px dashed var(--line);color:var(--muted);cursor:default}
     .apto.disabled .label{background:transparent}
 
-    /* Chamados */
     .tickets{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
     .tickets h3{margin:0 0 8px 0;font-size:14px;color:var(--muted)}
     .ticket{display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:8px;margin:6px 0;background:var(--head)}
@@ -64,7 +60,6 @@
     .ttext{flex:1}
     .ticket button{background:transparent;border:1px solid var(--line);color:#ef4444;border-radius:8px;padding:4px 6px;font-weight:800}
 
-    /* Rodapé */
     footer{border-top:2px solid var(--line);padding:8px 14px 60px 14px;color:var(--muted);font-size:13px}
     .legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;opacity:.95}
     .dot{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:6px}
@@ -81,7 +76,7 @@
 <body>
   <header>
     <div class="brand">
-      <img alt="Logo" src="Assets/logo.jpg?v=2025-09-21-01" onerror="this.style.display='none'"/>
+      <img alt="Logo" src="Assets/logo.jpg?v=build" onerror="this.style.display='none'"/>
       <h1>Quadro Branco — Entregas por Cores</h1>
     </div>
     <div class="seg" role="tablist" aria-label="Selecionar quadro">
@@ -90,6 +85,7 @@
     </div>
     <div class="tools">
       <button id="btnExport">Baixar JSON</button>
+      <button class="ghost" id="btnExportHTML">Baixar HTML completo</button>
       <button class="ghost" id="btnZerar">Zerar quadro</button>
       <button class="ghost" id="btnNovoChamado">Novo chamado</button>
     </div>
@@ -108,32 +104,32 @@
     <div class="legendTickets" id="legendTickets"></div>
   </footer>
 
+  <!-- Dados embutidos (substituídos ao exportar HTML) -->
+  <script id="DATA_JSON" type="application/json">{"__embedded":true}</script>
+
   <script>
     // ===== Versão/Cache Bust =====
-    const BUILD_HASH = '2025-09-21-02'; // altere em cada publicação
+    const BUILD_HASH = (()=>{
+      // Troque a cada publicação no GitHub (o export HTML já atualiza isso automaticamente)
+      return 'build-' + (new Date()).toISOString().slice(0,19);
+    })();
     const STORAGE_KEY = 'quadro_entregas_v3';
-
     try {
       const metaKey = STORAGE_KEY + ':meta';
       const meta = JSON.parse(localStorage.getItem(metaKey) || '{}');
       if (meta.buildHash !== BUILD_HASH) {
-        localStorage.removeItem(STORAGE_KEY); // limpa dados antigos
+        localStorage.removeItem(STORAGE_KEY);
         localStorage.setItem(metaKey, JSON.stringify({ buildHash: BUILD_HASH }));
       }
     } catch (_) {}
 
     // ===== Config =====
-    const PAV = 21;         // 21º com 2 coberturas
-    const APT = 4;          // Máx. por pavimento
-    const ORDER = ["nv","ok","pl","pm","nc"]; // ciclo
+    const PAV = 21; const APT = 4; const ORDER = ["nv","ok","pl","pm","nc"];
     const LABEL = { nv:"NV", ok:"OK", pl:"PL", pm:"PM", nc:"NC", xx:"--" };
-
-    // Aptos por pavimento (idx 0 = 21º)
     const aptosNoPav = (idx)=> (PAV - idx) === 21 ? 2 : 4;
-    const aptNumber = (pav, apIdx)=> `${pav}${(apIdx+1).toString().padStart(2,'0')}`; // 1->101, 12->1203
+    const aptNumber = (pav, apIdx)=> `${pav}${(apIdx+1).toString().padStart(2,'0')}`;
     const emptyMatriz = ()=> Array.from({length:PAV},(_,i)=> Array.from({length:APT},(_,a)=> a < aptosNoPav(i) ? 'nv' : 'xx'));
 
-    // Estrutura com 2 quadros independentes (logo fixa via HTML)
     const DEFAULTS = {
       current: 'eletrica',
       quadros: {
@@ -150,7 +146,6 @@
         const q = obj.quadros && obj.quadros[key];
         if(q && typeof q==='object'){
           out.quadros[key].nome = typeof q.nome==='string' && q.nome.trim()? q.nome : out.quadros[key].nome;
-          // Blocos
           if(q.blocos && typeof q.blocos==='object'){
             for(const [bn, mat] of Object.entries(q.blocos)){
               out.quadros[key].blocos[bn] = Array.from({length:PAV},(_,i)=>{
@@ -164,7 +159,6 @@
               });
             }
           }
-          // Chamados
           const arr = Array.isArray(q.chamados) ? q.chamados : [];
           out.quadros[key].chamados = arr.filter(c=> c && typeof c==='object').map(c=> ({
             id: String(c.id||'').trim()||'SEM-ID',
@@ -178,28 +172,37 @@
       return out;
     }
 
-    // Estado (usa STORAGE_KEY v3)
+    // ===== Estado: 1) localStorage 2) dados embutidos 3) defaults
     let state = JSON.parse(JSON.stringify(DEFAULTS));
-    try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw) state = normalize(JSON.parse(raw)); }catch(_){ state = JSON.parse(JSON.stringify(DEFAULTS)); }
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){ state = normalize(JSON.parse(raw)); }
+      else {
+        const embedded = document.getElementById('DATA_JSON');
+        if(embedded && embedded.textContent.trim().length){
+          state = normalize(JSON.parse(embedded.textContent));
+        }
+      }
+    }catch(_){ state = JSON.parse(JSON.stringify(DEFAULTS)); }
 
-    // Helpers DOM
+    // ===== Helpers DOM
     const wrap = document.getElementById('wrap');
     const tabEle = document.getElementById('tabEle');
     const tabHid = document.getElementById('tabHid');
 
     function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(_){ /* ignore */ } }
-    function chip(t){ return `<span class=\"chip\">${t}</span>` }
+    function chip(t){ return `<span class="chip">${t}</span>` }
     function head(t){ const d=document.createElement('div'); d.className='head cell'; d.textContent=t; return d; }
-
     function count(m){ const r={ok:0,pl:0,pm:0,nc:0,nv:0}; (m||[]).flat().forEach(s=>{ if(r[s]!=null) r[s]++; }); return r; }
-
-    function chamadosFor(quadro, bloco, i, a){
-      const arr = Array.isArray(state.quadros[quadro].chamados) ? state.quadros[quadro].chamados : [];
-      return arr.filter(c=> c.bloco===bloco && c.pavIndex===i && c.aptIndex===a);
+    function chamadosFor(quadro, bloco, i, a){ const arr = Array.isArray(state.quadros[quadro].chamados) ? state.quadros[quadro].chamados : []; return arr.filter(c=> c.bloco===bloco && c.pavIndex===i && c.aptIndex===a); }
+    function removerChamado(id){
+      const cur = state.current;
+      const list = state.quadros[cur].chamados || [];
+      const ix = list.findIndex(c=> c.id===id);
+      if(ix>-1){ list.splice(ix,1); save(); render(); }
     }
 
     function render(){
-      // atualiza abas
       tabEle.classList.toggle('active', state.current==='eletrica');
       tabEle.setAttribute('aria-selected', state.current==='eletrica');
       tabHid.classList.toggle('active', state.current==='hidraulica');
@@ -209,8 +212,7 @@
       const q = state.quadros[state.current];
 
       Object.entries(q.blocos).forEach(([nome, matriz])=>{
-        const card = document.createElement('section');
-        card.className = 'card';
+        const card = document.createElement('section'); card.className = 'card';
         const h2 = document.createElement('h2'); h2.textContent = `${q.nome} — ${nome}`; card.appendChild(h2);
 
         const kpi = document.createElement('div'); kpi.className = 'kpi';
@@ -233,7 +235,7 @@
             const d = document.createElement('div');
             d.className = `cell apto ${disabled? 'disabled' : st}`;
             d.title = disabled ? `Pav ${pav} • Inexistente` : `Apto ${num} • ${LABEL[st]}`;
-            d.innerHTML = `<span class=\"label\">${disabled? '\u2014' : `${num} · ${LABEL[st]}`}</span>`;
+            d.innerHTML = `<span class="label">${disabled? '\u2014' : `${num} · ${LABEL[st]}`}</span>`;
             if(!disabled){
               d.addEventListener('click', ()=>{
                 const cur = state.quadros[state.current].blocos[nome][i][a];
@@ -241,39 +243,22 @@
                 state.quadros[state.current].blocos[nome][i][a] = nx; save(); render();
               });
               const list = chamadosFor(state.current, nome, i, a);
-              if(list.length){
-                const b = document.createElement('div'); b.className='badge';
-                b.textContent = list.length===1 ? list[0].id : `+${list.length}`;
-                d.appendChild(b);
-              }
+              if(list.length){ const b = document.createElement('div'); b.className='badge'; b.textContent = list.length===1 ? list[0].id : `+${list.length}`; d.appendChild(b); }
             }
             grid.appendChild(d);
           }
         }
-
         card.appendChild(grid);
 
-        // Chamados por bloco
         const tks = document.createElement('div'); tks.className='tickets';
         tks.innerHTML = `<h3>Pendências / Chamados — ${nome}</h3>`;
         const lista = (state.quadros[state.current].chamados||[]).filter(c=> c.bloco===nome);
         if(!lista.length){ const emp=document.createElement('div'); emp.className='tmeta'; emp.textContent='Sem chamados.'; tks.appendChild(emp); }
-        else {
-          lista.sort((a,b)=> a.id.localeCompare(b.id)).forEach(ch=>{
-            const item = document.createElement('div'); item.className='ticket';
-            const pav = (PAV - ch.pavIndex).toString().padStart(2,'0');
-            const num = aptNumber(PAV - ch.pavIndex, ch.aptIndex);
-            item.innerHTML = `<span class=\"tid\">${ch.id}</span>
-              <div class=\"ttext\">
+        else { lista.sort((a,b)=> a.id.localeCompare(b.id)).forEach(ch=>{ const item = document.createElement('div'); item.className='ticket'; const pav = (PAV - ch.pavIndex).toString().padStart(2,'0'); const num = aptNumber(PAV - ch.pavIndex, ch.aptIndex); item.innerHTML = `<span class="tid">${ch.id}</span>
+              <div class="ttext">
                 <div><strong>Apto ${num}</strong> — ${escapeHTML(ch.texto||'')}</div>
-                <div class=\"tmeta\">Pav ${pav} • Coluna ${(ch.aptIndex+1).toString().padStart(2,'0')}</div>
-              </div>`;
-            const del = document.createElement('button'); del.textContent='Excluir';
-            del.addEventListener('click',()=>{ removerChamado(ch.id); });
-            item.appendChild(del);
-            tks.appendChild(item);
-          });
-        }
+                <div class="tmeta">Pav ${pav} • Coluna ${(ch.aptIndex+1).toString().padStart(2,'0')}</div>
+              </div>`; const del = document.createElement('button'); del.textContent='Excluir'; del.addEventListener('click',()=>{ removerChamado(ch.id); }); item.appendChild(del); tks.appendChild(item); }); }
         card.appendChild(tks);
 
         wrap.appendChild(card);
@@ -286,10 +271,7 @@
       const box = document.getElementById('legendTickets');
       const arr = state.quadros[state.current].chamados || [];
       if(!arr.length){ box.innerHTML=''; return; }
-      const itens = arr.slice().sort((a,b)=> a.id.localeCompare(b.id)).map(ch=>{
-        const num = aptNumber(PAV - ch.pavIndex, ch.aptIndex);
-        return `<li><strong>${ch.id}</strong>: ${escapeHTML(ch.texto||'')} <span style=\"color:#64748b\">(${escapeHTML(ch.bloco)} • Apto ${num})</span></li>`;
-      }).join('');
+      const itens = arr.slice().sort((a,b)=> a.id.localeCompare(b.id)).map(ch=>{ const num = aptNumber(PAV - ch.pavIndex, ch.aptIndex); return `<li><strong>${ch.id}</strong>: ${escapeHTML(ch.texto||'')} <span style=\"color:#64748b\">(${escapeHTML(ch.bloco)} • Apto ${num})</span></li>`; }).join('');
       box.innerHTML = `<h4>Legenda de chamados — ${state.quadros[state.current].nome}</h4><ul>${itens}</ul>`;
     }
 
@@ -299,8 +281,14 @@
     document.getElementById('btnExport').addEventListener('click', ()=>{
       const blob = new Blob([JSON.stringify(state,null,2)], {type:'application/json'});
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='code.json';
-      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      const a = document.createElement('a'); a.href=url; a.download='code.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('btnExportHTML').addEventListener('click', ()=>{
+      const html = buildFullHTMLWithState(state);
+      const blob = new Blob([html], {type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='index.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     });
 
     document.getElementById('btnZerar').addEventListener('click', ()=>{
@@ -313,29 +301,38 @@
     });
 
     document.getElementById('btnNovoChamado').addEventListener('click', ()=>{
-      const cur = state.current;
-      const q = state.quadros[cur];
+      const cur = state.current; const q = state.quadros[cur];
       try{
-        const bloco = prompt(`Bloco (${Object.keys(q.blocos).join(' / ')}):`); if(!bloco) return;
-        if(!q.blocos[bloco]){ alert('Bloco não encontrado.'); return; }
+        const bloco = prompt(`Bloco (${Object.keys(q.blocos).join(' / ')}):`); if(!bloco) return; if(!q.blocos[bloco]){ alert('Bloco não encontrado.'); return; }
         const pavStr = prompt('Pavimento (21 a 1):'); if(!pavStr) return; const pav = parseInt(pavStr,10); if(!(pav>=1&&pav<=21)){ alert('Pavimento inválido'); return; }
         const aptStr = prompt('Apto (01 a 04):'); if(!aptStr) return; const apt = parseInt(aptStr,10); if(!(apt>=1&&apt<=4)){ alert('Apto inválido'); return; }
         const i = PAV - pav; const a = apt-1; if(a>=aptosNoPav(i)){ alert('Este apartamento não existe neste pavimento.'); return; }
-        const id = prompt('ID do chamado (ex.: CH-101):'); if(!id) return;
-        const texto = prompt('Descrição resumida da pendência:') || '';
-        q.chamados.push({ id, bloco, pavIndex:i, aptIndex:a, texto });
-        save(); render();
+        const id = prompt('ID do chamado (ex.: CH-101):'); if(!id) return; const texto = prompt('Descrição resumida da pendência:') || '';
+        q.chamados.push({ id, bloco, pavIndex:i, aptIndex:a, texto }); save(); render();
       }catch(e){ console.warn(e); }
     });
 
-    // Abas
     tabEle.addEventListener('click', ()=>{ state.current='eletrica'; save(); render(); });
     tabHid.addEventListener('click', ()=>{ state.current='hidraulica'; save(); render(); });
 
-    // Self-tests (console)
+    // ===== Exportador de HTML completo =====
+    function buildFullHTMLWithState(curState){
+      const doc = document.documentElement.cloneNode(true);
+      const dataTag = doc.querySelector('#DATA_JSON');
+      if(dataTag){ dataTag.textContent = JSON.stringify(curState); }
+      // Atualiza versões (cache bust)
+      const logo = doc.querySelector('.brand img');
+      if(logo){ const u = new URL(logo.getAttribute('src'), window.location.origin); u.search = '?v=' + Date.now(); logo.setAttribute('src', u.pathname + u.search); }
+      // Injeta BUILD_HASH novo no script (substitui ocorrência simples)
+      const scripts = doc.querySelectorAll('script');
+      scripts.forEach(sc=>{ if(sc.textContent.includes('const BUILD_HASH')){ sc.textContent = sc.textContent.replace(/const BUILD_HASH =[^;]+;/, `const BUILD_HASH = 'build-${Date.now()}';`); } });
+      return '<!DOCTYPE html>' + '\n' + doc.outerHTML;
+    }
+
+    // ===== Self-tests =====
     (function tests(){
       console.group('Self-tests');
-      const legacy = { quadros:{ eletrica:{ blocos:{'Bloco 1': emptyMatriz()}, /* sem chamados */ }, hidraulica:{ blocos:{'Bloco 2': emptyMatriz()}, chamados:{foo:'bar'} } } };
+      const legacy = { quadros:{ eletrica:{ blocos:{'Bloco 1': emptyMatriz()} }, hidraulica:{ blocos:{'Bloco 2': emptyMatriz()}, chamados:{foo:'bar'} } } };
       const n = normalize(legacy);
       console.assert(Array.isArray(n.quadros.eletrica.chamados), 'T1: chamados elétrica array');
       console.assert(Array.isArray(n.quadros.hidraulica.chamados), 'T2: chamados hidráulica array');
@@ -349,7 +346,6 @@
   </script>
 </body>
 </html>
-
 
 
 
