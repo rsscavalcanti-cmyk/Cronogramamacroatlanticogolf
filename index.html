@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quadro Branco — Entregas (Elétrica / Hidráulica)</title>
-  <meta name="description" content="TV-ready. Dois quadros: Equipe Elétrica e Equipe Hidráulica. Clique alterna status, chamados por apto. Exporta JSON e também BAIXA O HTML COMPLETO com os dados embutidos. Logo fixa. Sem import (atualização via GitHub)." />
+  <meta name="description" content="TV-ready. Dois quadros: Equipe Elétrica e Equipe Hidráulica. Clique alterna status, chamados por apto. Exporta JSON e também COPIA O HTML COMPLETO com os dados embutidos. Logo fixa. Sem import (atualização via GitHub)." />
   <style>
     :root{
       --bg:#ffffff; --text:#0f172a; --muted:#475569; --line:#e2e8f0; --head:#f8fafc;
@@ -36,7 +36,6 @@
     .grid{display:grid;grid-template-columns:76px repeat(4, 1fr);gap:8px}
     .cell,.head{border:1px solid var(--line);border-radius:12px;padding:0;text-align:center}
     .head{background:var(--head);font-weight:700;padding:10px}
-    .pv{font-variant-numeric:tabular-nums;font-weight:800}
 
     .apto{position:relative;height:48px;display:flex;align-items:center;justify-content:center;font-weight:800;border-width:2px;cursor:pointer;user-select:none;transition:transform .06s ease}
     .apto:active{transform:scale(.98)}
@@ -85,7 +84,7 @@
     </div>
     <div class="tools">
       <button id="btnExport">Baixar JSON</button>
-      <button class="ghost" id="btnExportHTML">Baixar HTML completo</button>
+      <button class="ghost" id="btnCopyHTML">Copiar HTML completo</button>
       <button class="ghost" id="btnZerar">Zerar quadro</button>
       <button class="ghost" id="btnNovoChamado">Novo chamado</button>
     </div>
@@ -104,15 +103,12 @@
     <div class="legendTickets" id="legendTickets"></div>
   </footer>
 
-  <!-- Dados embutidos (substituídos ao exportar HTML) -->
+  <!-- Dados embutidos (substituídos ao copiar HTML) -->
   <script id="DATA_JSON" type="application/json">{"__embedded":true}</script>
 
   <script>
     // ===== Versão/Cache Bust =====
-    const BUILD_HASH = (()=>{
-      // Troque a cada publicação no GitHub (o export HTML já atualiza isso automaticamente)
-      return 'build-' + (new Date()).toISOString().slice(0,19);
-    })();
+    const BUILD_HASH = (()=> 'build-' + (new Date()).toISOString().slice(0,19))();
     const STORAGE_KEY = 'quadro_entregas_v3';
     try {
       const metaKey = STORAGE_KEY + ':meta';
@@ -195,12 +191,7 @@
     function head(t){ const d=document.createElement('div'); d.className='head cell'; d.textContent=t; return d; }
     function count(m){ const r={ok:0,pl:0,pm:0,nc:0,nv:0}; (m||[]).flat().forEach(s=>{ if(r[s]!=null) r[s]++; }); return r; }
     function chamadosFor(quadro, bloco, i, a){ const arr = Array.isArray(state.quadros[quadro].chamados) ? state.quadros[quadro].chamados : []; return arr.filter(c=> c.bloco===bloco && c.pavIndex===i && c.aptIndex===a); }
-    function removerChamado(id){
-      const cur = state.current;
-      const list = state.quadros[cur].chamados || [];
-      const ix = list.findIndex(c=> c.id===id);
-      if(ix>-1){ list.splice(ix,1); save(); render(); }
-    }
+    function removerChamado(id){ const cur = state.current; const list = state.quadros[cur].chamados || []; const ix = list.findIndex(c=> c.id===id); if(ix>-1){ list.splice(ix,1); save(); render(); } }
 
     function render(){
       tabEle.classList.toggle('active', state.current==='eletrica');
@@ -284,11 +275,19 @@
       const a = document.createElement('a'); a.href=url; a.download='code.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     });
 
-    document.getElementById('btnExportHTML').addEventListener('click', ()=>{
+    document.getElementById('btnCopyHTML').addEventListener('click', async ()=>{
       const html = buildFullHTMLWithState(state);
-      const blob = new Blob([html], {type:'text/html'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href=url; a.download='index.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      try{
+        await navigator.clipboard.writeText(html);
+        alert('HTML completo copiado! Abra o GitHub, edite o index.html e cole.');
+      }catch(e){
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = html; document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, ta.value.length);
+        try{ document.execCommand('copy'); alert('HTML completo copiado (fallback)!'); }
+        catch(_){ alert('Não foi possível copiar automaticamente. Selecione e copie manualmente.'); }
+        ta.remove();
+      }
     });
 
     document.getElementById('btnZerar').addEventListener('click', ()=>{
@@ -315,15 +314,13 @@
     tabEle.addEventListener('click', ()=>{ state.current='eletrica'; save(); render(); });
     tabHid.addEventListener('click', ()=>{ state.current='hidraulica'; save(); render(); });
 
-    // ===== Exportador de HTML completo =====
+    // ===== Constrói HTML completo com dados embutidos =====
     function buildFullHTMLWithState(curState){
       const doc = document.documentElement.cloneNode(true);
       const dataTag = doc.querySelector('#DATA_JSON');
       if(dataTag){ dataTag.textContent = JSON.stringify(curState); }
-      // Atualiza versões (cache bust)
       const logo = doc.querySelector('.brand img');
       if(logo){ const u = new URL(logo.getAttribute('src'), window.location.origin); u.search = '?v=' + Date.now(); logo.setAttribute('src', u.pathname + u.search); }
-      // Injeta BUILD_HASH novo no script (substitui ocorrência simples)
       const scripts = doc.querySelectorAll('script');
       scripts.forEach(sc=>{ if(sc.textContent.includes('const BUILD_HASH')){ sc.textContent = sc.textContent.replace(/const BUILD_HASH =[^;]+;/, `const BUILD_HASH = 'build-${Date.now()}';`); } });
       return '<!DOCTYPE html>' + '\n' + doc.outerHTML;
@@ -346,8 +343,5 @@
   </script>
 </body>
 </html>
-
-
-
 
 
