@@ -6,8 +6,8 @@
       "blocos": {
         "Bloco 1": [
           [
-            "nv",
-            "nv",
+            "ok",
+            "ok",
             "xx",
             "xx"
           ],
@@ -102,34 +102,34 @@
             "nv"
           ],
           [
-            "pl",
-            "pl",
-            "pl",
-            "ok"
+            "nv",
+            "nv",
+            "nv",
+            "nv"
           ],
           [
-            "ok",
-            "ok",
-            "ok",
-            "ok"
+            "nv",
+            "nv",
+            "nv",
+            "nv"
           ],
           [
-            "ok",
-            "ok",
-            "ok",
-            "ok"
+            "nv",
+            "nv",
+            "nv",
+            "nv"
           ],
           [
-            "ok",
-            "ok",
-            "ok",
-            "ok"
+            "nv",
+            "nv",
+            "nv",
+            "nv"
           ],
           [
-            "ok",
-            "ok",
-            "ok",
-            "ok"
+            "nv",
+            "nv",
+            "nv",
+            "nv"
           ]
         ],
         "Bloco 2": [
@@ -201,31 +201,13 @@
           ],
           [
             "nv",
-            "ok",
-            "ok",
-            "nv"
-          ],
-          [
-            "pl",
-            "pl",
-            "nv",
-            "nv"
-          ],
-          [
-            "ok",
-            "nv",
-            "nv",
-            "nv"
-          ],
-          [
-            "ok",
             "nv",
             "nv",
             "nv"
           ],
           [
             "nv",
-            "ok",
+            "nv",
             "nv",
             "nv"
           ],
@@ -236,8 +218,26 @@
             "nv"
           ],
           [
-            "ok",
-            "ok",
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
             "nv",
             "nv"
           ],
@@ -261,15 +261,7 @@
           ]
         ]
       },
-      "chamados": [
-        {
-          "id": "101",
-          "bloco": "Bloco 1",
-          "pavIndex": 1,
-          "aptIndex": 1,
-          "texto": "vazamento"
-        }
-      ]
+      "chamados": []
     },
     "hidraulica": {
       "nome": "Equipe Hidráulica",
