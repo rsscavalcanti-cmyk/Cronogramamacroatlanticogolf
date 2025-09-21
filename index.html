@@ -1,190 +1,43 @@
+
 <!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Atlântico Golf — Cronograma (11/Set)</title>
+    <title>Woods & Ox Park — Cronograma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <style>
       html,body{height:100%;background:#f5f7fb;color:#111827}
+      /* Tipografia enxuta */
+      body{font-feature-settings:"tnum" 1, "ss01" 1}
     </style>
   </head>
-  <body>
+  <body class="text-[12px]">
     <div id="root"></div>
 
     <script type="text/babel">
       const { useMemo, useState, useEffect } = React;
 
-      // ===== Datas e helpers =====
-      const d = (s) => new Date(s + "T00:00:00");
-      const fmt = (date) => date.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      // ===== Helpers =====
+      const d = (s) => new Date((s||"").replace(/\//g,'-').replace(/(\d{2})-(\d{2})-(\d{4})/,'$3-$2-$1') + (s?.includes('T')?'':'T00:00:00'));
+      const fmt = (date) => date instanceof Date && !isNaN(date) ? date.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" }) : '';
       const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
       const daysBetween = (a,b) => Math.max(0, Math.round((b - a) / (24*3600*1000)));
       const TODAY = new Date();
-
-      // Janela (conforme documento)
-      const WINDOW_START = d("2025-06-02");
-      const WINDOW_END   = d("2026-01-30");
       const MS = 24*3600*1000;
 
-      // ===== Estilo =====
+      // Janela padrão (ajustada ao CSV quando carregado)
+      const DEFAULT_START = new Date('2025-06-02T00:00:00');
+      const DEFAULT_END   = new Date('2026-01-30T00:00:00');
+
       const COLORS = {
         base:"#0e3a6d", bar:"#2b8ccc", done:"#16a34a", wait:"#ca8a04", risk:"#b91c1c", hold:"#9333ea",
         grid:"#e2e8f0", text:"#111827", bg:"#f5f7fb", card:"#ffffff", border:"#cbd5e1"
       };
-
-      // ===== Dados (SUBSTITUI TUDO pelo que você enviou) =====
-      // Mapeamento por bloco:
-      // - Bloco 1: Id 1..10 + Hidro/Gás Id 35..47
-      // - Bloco 2: Id 12..34
-      // - Bloco 3: Id 48..71 + Hidro/Gás Id 72..83
-      // - Embasamento: Id 84..121 + 97..105 + 122,134,137
-      // - Id 0 é o macro do projeto; deixei como "Bloco 1" (ajuste se quiser em “Todos”)
-      const t = (id, bloco, nome, i, f, pct, obs="") => ({ id, bloco, nome, inicio:i, fim:f, pct, obs });
-
-      const tasks = [
-        // Macro (se preferir fora dos blocos, mude para bloco:"Todos")
-        t(0,"Bloco 1","Atlântico Golf — Macro", "2025-06-02","2026-01-30",27,""),
-
-        // ===== BLOCO 1 =====
-        t(1,"Bloco 1","Bloco 1", "2025-06-02","2025-12-24",11,""),
-        t(2,"Bloco 1","Entrada de Energia", "2025-06-02","2025-12-24",11,""),
-        t(3,"Bloco 1","Alimentadores entre os Cofres e PDMD's", "2025-11-10","2025-12-24",0,"Aguardando cabos da Patrimar"),
-        t(4,"Bloco 1","Instalação de Painéis Padrão Light no Térreo", "2025-11-10","2025-12-24",0,"Aguardando chegada dos painéis"),
-        t(5,"Bloco 1","Infra. Interligação Painéis Light (Térreo ↔ Subsolo)", "2025-11-10","2025-12-24",0,""),
-        t(6,"Bloco 1","Lançamento Alimentadores Painéis Light", "2025-10-01","2025-10-07",0,"Depende de painéis"),
-        t(7,"Bloco 1","Fechamento Alimentadores Painéis Light", "2025-10-08","2025-10-13",0,"Depende de painéis"),
-        t(8,"Bloco 1","Conclusão dos Barramentos Blindados", "2025-08-01","2025-08-22",95,"Aguardando desobstrução do trechos"),
-        t(9,"Bloco 1","Ligação Barramentos Blindados → Painéis Light", "2025-08-01","2025-08-07",0,"Depende de painéis"),
-        t(10,"Bloco 1","Peças in Hold dos Barramentos", "2025-08-20","2025-09-05",0,"Aguardando"),
-
-        // Hidro/Gás Bloco 1
-        t(35,"Bloco 1","Instalações Hidrossanitárias e Gás", "2025-06-02","2026-01-30",58,""),
-        t(36,"Bloco 1","Louças dos Apartamentos", "2025-06-02","2025-06-13",95,"Aguardando Patrimar - Coberturas"),
-        t(37,"Bloco 1","Hidrômetros", "2025-06-02","2025-06-09",85,""),
-        t(38,"Bloco 1","Redutoras de Pressão", "2025-06-02","2025-06-16",83,"Aguardando"),
-        t(39,"Bloco 1","Metais e Acabamentos dos Aptos (incl. carenagens)", "2025-07-28","2025-09-15",40,""),
-        t(40,"Bloco 1","Bombas de Pressurização", "2025-10-30","2025-11-12",20,""),
-        t(41,"Bloco 1","Automáticos de Boia", "2025-10-15","2025-10-30",60,"Cabos Furtados em um trecho"),
-        t(42,"Bloco 1","Boia Mecânica — Reservatórios Superiores", "2025-09-15","2025-09-26",0,"Aguardando definição da Patrimar com relação ao projeto"),
-        t(44,"Bloco 1","Chaminés de Gás", "2025-07-21","2025-08-11",25,""),
-        t(46,"Bloco 1","Piscinas Coberturas", "2025-06-09","2025-08-28",90,""),
-        t(47,"Bloco 1","Verificações Finais", "2026-01-05","2026-01-30",0,""),
-
-        // ===== BLOCO 2 =====
-        t(12,"Bloco 2","Bloco 2", "2025-06-02","2026-01-30",54,""),
-        t(13,"Bloco 2","Instalações Elétricas/Infra Especiais/SPDA/Entrada de Energia", "2025-06-02","2026-01-16",54,""),
-        t(14,"Bloco 2","Interruptores e Tomadas — Apartamentos", "2025-06-02","2025-07-28",95,""),
-        t(15,"Bloco 2","Interruptores e Tomadas — Térreo e Telhado", "2025-06-30","2025-07-24",80,""),
-        t(16,"Bloco 2","QDL's Aptos (inclui fechamento de circuitos)", "2025-06-02","2025-09-26",70,""),
-        t(17,"Bloco 2","Alimentadores entre os Cofres e PDMD's", "2025-07-07","2025-07-19",0,""),
-        t(18,"Bloco 2","Alimentadores entre PDMD's e Aptos furtados", "2025-06-23","2025-12-19",30,""),
-        t(19,"Bloco 2","SPDA - Barra Chata", "2025-07-14","2025-10-17",60,"Aguardando liberação Patrimar"),
-        t(20,"Bloco 2","Caixas de Painéis de Áreas Comuns", "2025-06-02","2025-11-14",60,""),
-        t(21,"Bloco 2","Fechamento de Infra de Painéis — Áreas Comuns", "2025-06-02","2025-11-14",50,""),
-        t(22,"Bloco 2","Fechamento Alimentadores/Circuitos — Áreas", "2025-09-01","2025-11-21",70,"Aguardando miolos dos painéis"),
-        t(23,"Bloco 2","Instalação Painéis Padrão Light — Térreo", "2025-11-03","2025-11-07",0,""),
-        t(24,"Bloco 2","Infra. Interligação Painéis Light (Térreo ↔ Subsolo)", "2025-11-10","2025-11-14",0,""),
-        t(25,"Bloco 2","Lançamento Alimentadores Painéis Light", "2025-11-03","2025-11-10",0,"Depende dos cabos"),
-        t(26,"Bloco 2","Fechamento Alimentadores Painéis Light", "2025-11-17","2025-11-20",0,"Depende dos cabos"),
-        t(27,"Bloco 2","Conclusão Barramentos Blindados", "2025-08-01","2026-01-09",80,""),
-        t(28,"Bloco 2","Ligação Barramentos Blindados → Painéis Light", "2026-01-12","2026-01-16",0,""),
-        t(29,"Bloco 2","Cabeamentos — Automáticos de Boia (reserv. superiores)", "2025-10-15","2025-10-30",60,""),
-        t(30,"Bloco 2","Instalação de Luminárias — Áreas Comuns", "2025-10-06","2025-10-24",0,""),
-        t(31,"Bloco 2","Entregas para Qualidade — Apartamentos", "2025-09-10","2025-12-26",0,""),
-        t(32,"Bloco 2","Busway", "2025-06-02","2025-06-06",90,""),
-        t(33,"Bloco 2","Cofres do Busway", "2025-06-02","2025-07-18",90,""),
-        t(34,"Bloco 2","Infraestrutura de Medição Remota Light", "2025-06-02","2025-06-02",90,""),
-
-        // ===== BLOCO 3 =====
-        t(48,"Bloco 3","Bloco 3", "2025-06-02","2026-01-30",50,""),
-        t(49,"Bloco 3","Instalações Elétricas/Infra Especiais/SPDA/Entrada de Energia", "2025-06-02","2026-01-16",47,""),
-        t(50,"Bloco 3","Interruptores e Tomadas — Apartamentos", "2025-06-02","2025-07-28",95,""),
-        t(51,"Bloco 3","Interruptores e Tomadas — Térreo e Telhado", "2025-06-30","2025-07-24",80,""),
-        t(52,"Bloco 3","QDL's Aptos (inclui fechamento de circuitos)", "2025-06-02","2025-09-26",70,""),
-        t(53,"Bloco 3","Alimentadores entre os Cofres e PDMD's", "2025-07-07","2025-07-19",0,""),
-        t(54,"Bloco 3","Alimentadores entre PDMD's e Aptos furtados", "2025-06-23","2025-12-19",30,""),
-        t(55,"Bloco 3","SPDA - Barra Chata", "2025-07-14","2025-10-17",60,""),
-        t(56,"Bloco 3","Caixas de Painéis de Áreas Comuns", "2025-06-02","2025-11-14",80,""),
-        t(57,"Bloco 3","Fechamento de Infra de Painéis — Áreas Comuns", "2025-06-02","2025-11-14",50,""),
-        t(58,"Bloco 3","Fechamento Alimentadores/Circuitos — Áreas", "2025-09-01","2025-11-21",70,"Aguardando miolos dos painéis"),
-        t(59,"Bloco 3","Instalação Painéis Padrão Light — Térreo", "2025-11-03","2025-11-07",0,""),
-        t(60,"Bloco 3","Infra. Interligação Painéis Light (Térreo ↔ Subsolo)", "2025-11-10","2025-11-14",0,""),
-        t(61,"Bloco 3","Lançamento Alimentadores Painéis Light", "2025-11-03","2025-11-10",0,"Depende dos cabos"),
-        t(62,"Bloco 3","Fechamento Alimentadores Painéis Light", "2025-11-17","2025-11-20",0,"Depende dos cabos"),
-        t(63,"Bloco 3","Ligação Barramentos Blindados → Painéis Light", "2025-08-01","2026-01-09",0,""),
-        t(64,"Bloco 3","Infraestrutura de Medição Remota Light", "2025-10-15","2025-10-30",60,""),
-        t(65,"Bloco 3","Conclusão dos Barramentos Blindados", "2026-01-12","2026-01-16",80,""),
-        t(66,"Bloco 3","Cofres do Busway", "2025-06-02","2025-07-18",90,""),
-        t(67,"Bloco 3","Cabeamentos — Automáticos de Boia (reserv. superiores)", "2025-06-02","2025-06-02",90,""),
-        t(68,"Bloco 3","Busway", "2025-06-06","2025-06-06",90,""),
-        t(69,"Bloco 3","Instalação de Luminárias — Áreas Comuns", "2025-08-04","2025-08-23",0,""),
-        t(70,"Bloco 3","Entregas para Qualidade — Apartamentos", "2025-09-10","2025-12-26",0,""),
-
-        // Hidro/Gás Bloco 3
-        t(71,"Bloco 3","Instalações Hidrossanitárias e Gás", "2025-06-02","2026-01-30",64,""),
-        t(72,"Bloco 3","Louças dos Apartamentos", "2025-06-02","2025-06-13",95,"Aguardando Patrimar - Coberturas"),
-        t(73,"Bloco 3","Hidrômetros", "2025-06-02","2025-06-09",90,""),
-        t(74,"Bloco 3","Redutoras de Pressão", "2025-06-02","2025-06-16",80,"Aguardando"),
-        t(75,"Bloco 3","Metais e Acabamentos dos Aptos (incl. carenagens)", "2025-07-28","2025-09-15",40,""),
-        t(76,"Bloco 3","Bombas de Pressurização", "2025-10-30","2025-11-12",20,""),
-        t(77,"Bloco 3","Automáticos de Boia", "2025-10-15","2025-10-30",60,""),
-        t(78,"Bloco 3","Boia Mecânica — Reservatórios Superiores", "2025-09-15","2025-09-26",0,"Aguardando definição da Patrimar com relação ao projeto"),
-        t(80,"Bloco 3","Chaminés de Gás", "2025-07-21","2025-08-11",98,""),
-        t(82,"Bloco 3","Piscinas Coberturas", "2025-06-09","2025-08-28",90,""),
-        t(83,"Bloco 3","Verificações Finais", "2026-01-05","2026-01-30",0,""),
-
-        // ===== EMBASAMENTO (Térreo/Subsolo + Pacote Light + drenagem/AP) =====
-        t(84,"Embasamento","Embasamento — Térreo e Subsolo (geral)", "2025-06-02","2026-01-30",32,""),
-        t(85,"Embasamento","Instalações Elétricas/Infra Especiais/SPDA/Entrada", "2025-06-02","2026-01-30",32,""),
-        t(86,"Embasamento","Infra de Força interligada aos Painéis Elétricos", "2025-06-16","2025-08-02",80,""),
-        t(87,"Embasamento","Infra de Distribuição Elétrica", "2025-06-02","2025-08-02",80,""),
-        t(88,"Embasamento","Cabeamento de Distribuição p/ Iluminação Externa", "2025-10-06","2025-12-19",0,"Aguardando definição final do aditivo"),
-        t(89,"Embasamento","Caixas de Painéis Elétricos", "2025-06-02","2025-08-15",60,""),
-        t(90,"Embasamento","Lançamento Alimentadores Serviço Condominial", "2025-08-08","2025-08-25",25,""),
-        t(91,"Embasamento","Miolos de Painéis Elétricos", "2025-06-30","2025-10-10",60,""),
-        t(92,"Embasamento","Fechamento Circuitos de Força + Cabos de Distribuição", "2025-07-07","2025-10-17",10,""),
-        t(93,"Embasamento","Luminárias de Emergência", "2025-11-17","2025-11-28",0,"Aguardando compras e suprimentos"),
-        t(94,"Embasamento","Luminárias de Subsolo", "2025-06-02","2025-08-18",70,""),
-        t(95,"Embasamento","Luminárias Decorativas do Térreo", "2025-08-04","2025-09-20",0,"Não liberado"),
-        t(96,"Embasamento","Luminárias da Área Externa (piscinas/espelhos/etc.)", "2025-06-02","2025-09-19",20,""),
-
-        // Pacote Light no embasamento
-        t(97,"Embasamento","Barramentos Blindados (janela 1)", "2025-08-01","2025-08-07",80,""),
-        t(98,"Embasamento","Totalizadoras Light", "2025-08-04","2025-10-30",0,""),
-        t(99,"Embasamento","Infra Elétrica p/ Totalizadoras", "2025-08-04","2025-08-15",80,""),
-        t(100,"Embasamento","Cabos Alimentadores — Interlig. Painéis Light", "2025-08-22","2025-09-05",0,"Depende dos cabos"),
-        t(101,"Embasamento","Interlig. de Cabos — Caixa de Derivação dos Barramentos", "2025-08-08","2025-08-25",0,""),
-        t(102,"Embasamento","Alimentador de Serviço — Painel Light → QTA Serviço", "2025-09-22","2025-10-06",0,""),
-        t(103,"Embasamento","Lançamento Cabos — Alimentadores do Subsolo", "2025-08-08","2025-12-15",25,""),
-        t(104,"Embasamento","Verificações Finais", "2026-01-05","2026-01-30",0,""),
-        t(105,"Embasamento","Infra de Medição Remota Light", "2025-06-02","2025-08-11",30,"Aguardando compra do material (Patrimar)"),
-
-        // Hidro/Gás de embasamento (áreas técnicas e drenagem)
-        t(106,"Embasamento","Instalações Hidrossanitárias e Gás", "2025-06-02","2025-09-15",34,""),
-        t(107,"Embasamento","Área dos Reservatórios", "2025-06-02","2025-08-18",16,""),
-        t(108,"Embasamento","Bombas de Recalque — Água Fria", "2025-06-16","2025-06-30",0,""),
-        t(109,"Embasamento","Bombas de Recalque — Esgoto, AP e AS (incl. barrilete)", "2025-06-02","2025-07-31",0,""),
-        t(110,"Embasamento","Barrilete de Interligação — Reservatórios de Água Fria", "2025-07-01","2025-08-18",0,""),
-        t(111,"Embasamento","Rede de Recalque de Efluentes (Esgoto, AP e AS)", "2025-06-02","2025-07-31",50,""),
-        t(112,"Embasamento","Rede de Piscina e Espelho D'Água", "2025-06-02","2025-07-31",80,""),
-        t(113,"Embasamento","Ajustes em Redes de Gás (interf. com barramentos)", "2025-06-02","2025-06-30",30,""),
-        t(114,"Embasamento","Instalação de Louças — Áreas Comuns", "2025-08-04","2025-08-29",0,""),
-        t(115,"Embasamento","Instalação de Metais — Áreas Comuns", "2025-08-04","2025-08-29",0,""),
-        t(116,"Embasamento","Finalização da Entrada de Gás — Medida", "2025-08-11","2025-09-15",0,""),
-        t(117,"Embasamento","Verificações Finais (hidro/gás)", "2025-06-02","2025-07-08",0,""),
-        t(118,"Embasamento","Fechamento dos Ralos de Águas Pluviais (SS → Térreo)", "2025-06-16","2025-08-29",90,""),
-        t(120,"Embasamento","Acabamento das Caixas de Águas Pluviais", "2025-06-02","2025-06-02",80,""),
-        t(121,"Embasamento","Colocação de Tampões — Caixas de Águas Pluviais", "2025-08-04","2025-08-29",0,""),
-
-        // Gerais de embasamento / administrativos
-        t(122,"Embasamento","Aditivos Pendentes", "2025-06-02","2025-12-19",33,""),
-        t(134,"Embasamento","Material — Fornecimento Cliente", "2025-06-02","2025-06-02",0,""),
-        t(137,"Embasamento","Atividades da Quarterização (Serviços)", "2025-06-02","2025-11-21",0,"A definir com diretoria"),
-      ];
 
       // ===== Status =====
       function statusFrom(t){
@@ -200,25 +53,52 @@
         if (s==="done") return COLORS.done;
         if (s==="wait") return COLORS.wait;
         if (s==="hold") return COLORS.hold;
+        if (s==="overdue") return COLORS.bar;
         return COLORS.bar;
       }
 
-      // ===== Logo (auto) =====
-      const LOGO_CANDIDATES = ['./logo.jpg','./logo.png','./logo.svg','./assets/logo.jpg','./assets/logo.png','./assets/logo.svg'];
-      function LogoImage({ size = 48 }){
-        const [idx, setIdx] = useState(0);
-        const [src, setSrc] = useState(LOGO_CANDIDATES[0]);
-        useEffect(()=>{ setSrc(LOGO_CANDIDATES[0]); }, []);
-        const onError = () => { if (idx < LOGO_CANDIDATES.length - 1){ const n = idx+1; setIdx(n); setSrc(LOGO_CANDIDATES[n]); } else setSrc(''); };
-        if (!src) return null;
-        return <img src={src} onError={onError} alt="logo" style={{height:size,width:'auto'}}/>;
+      // ===== CSV → tasks =====
+      const nameToBloco = (nome='') => {
+        const n = nome.toLowerCase();
+        if (/bloco\s*1/.test(n)) return 'Bloco 1';
+        if (/bloco\s*2/.test(n)) return 'Bloco 2';
+        if (/bloco\s*3/.test(n)) return 'Bloco 3';
+        if (/embas|subsolo|térreo|terreo|reservat|piscina|externa/.test(n)) return 'Embasamento';
+        return 'Todos';
+      };
+      const isEnergyB1 = (x) => x.bloco === 'Bloco 1' && /energia|pain[eé]is\s*light|barrament|alimentador|cofre|pdmd|interlig|entrada|totalizadora|busway/i.test(x.nome||'');
+
+      function autodetectColumns(header){
+        const idx = (keys) => header.findIndex(h => keys.some(k => new RegExp(k, 'i').test(h)));
+        return {
+          id: idx(['^id$','task id']),
+          name: idx(['^name$','task name','nome','tarefa']),
+          start: idx(['^start$','in[ií]cio','data inicial']),
+          finish: idx(['^finish$','t[ée]rmino','data final','end']),
+          pct: idx(['percent','%','concl','complete']),
+          notes: idx(['notes','obs','observa']),
+          bloco: idx(['bloco','setor']),
+        };
       }
 
-      // ===== Componentes UI =====
+      function normalizeRow(row, map){
+        const get = (i) => i>=0 && i<row.length ? row[i] : '';
+        return {
+          origId: String(get(map.id)||'').trim(),
+          nome: String(get(map.name)||'').trim(),
+          inicio: String(get(map.start)||'').trim(),
+          fim: String(get(map.finish)||'').trim(),
+          pct: Number(String(get(map.pct)||'0').toString().replace('%','').replace(',','.')) || 0,
+          obs: String(get(map.notes)||'').trim(),
+          bloco: (map.bloco>=0? String(get(map.bloco)).trim() : nameToBloco(String(get(map.name)))) || 'Todos',
+        };
+      }
+
+      // ===== UI =====
       function Legend(){
-        const Item = ({c,t}) => <div className="flex items-center gap-2 text-[12px]"><span className="inline-block w-3 h-3 rounded" style={{background:c}}/>{t}</div>;
+        const Item = ({c,t}) => <div className="flex items-center gap-2 text-[11px]"><span className="inline-block w-3 h-3 rounded" style={{background:c}}/>{t}</div>;
         return (
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-3">
             <Item c={COLORS.bar} t="Em execução" />
             <Item c={COLORS.done} t="Concluído" />
             <Item c={COLORS.wait} t="Aguardando/Dependência" />
@@ -228,67 +108,55 @@
         );
       }
 
-      function Filters({ onFilter, zoom, setZoom, compact, setCompact }){
-        const [txt, setTxt] = useState("");
-        const [status, setStatus] = useState("Todos");
-        const [bloco, setBloco] = useState("Todos");
-        const BLOCO_OPTS = ["Todos","Bloco 1","Bloco 2","Bloco 3","Embasamento"];
-        const STATUS_ORDER = ["Todos","inprog","wait","hold","overdue","done"];
-        const STATUS_LABEL = { inprog:"Em execução", wait:"Aguardando", hold:"Hold", overdue:"Em atraso", done:"Concluído" };
-
+      function DropCSV({ onData }){
+        const [err, setErr] = useState('');
+        const parse = (file) => {
+          setErr('');
+          Papa.parse(file, {
+            complete: (res) => {
+              try{
+                const rows = res.data.filter(r=>r && r.length>0);
+                const header = rows[0].map(x=>String(x));
+                const map = autodetectColumns(header);
+                if (map.name<0 || map.start<0 || map.finish<0){
+                  setErr('Cabeçalho insuficiente. Inclua pelo menos: Name, Start, Finish.');
+                  return;
+                }
+                const items = rows.slice(1).map(r=>normalizeRow(r, map)).filter(x=>x.nome);
+                onData({ header, items });
+              }catch(e){ setErr('Falha ao processar CSV.'); }
+            },
+            error: () => setErr('Erro ao ler CSV.'),
+            skipEmptyLines: true
+          });
+        };
         return (
-          <div className="flex flex-wrap items-end gap-3">
-            <div className="flex flex-col">
-              <label className="text-[12px] text-slate-600 mb-1">Busca</label>
-              <input className="px-3 py-2 rounded-lg border outline-none" placeholder="Tarefa ou observação..." value={txt} onChange={e=>setTxt(e.target.value)} />
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-[12px] text-slate-600 mb-1">Bloco</label>
-              <select className="px-3 py-2 rounded-lg border" value={bloco} onChange={e=>setBloco(e.target.value)}>
-                {BLOCO_OPTS.map(b => <option key={b}>{b}</option>)}
-              </select>
-            </div>
-
-            <div className="flex flex-col">
-              <label className="text-[12px] text-slate-600 mb-1">Status</label>
-              <select className="px-3 py-2 rounded-lg border" value={status} onChange={e=>setStatus(e.target.value)}>
-                {STATUS_ORDER.map(s => <option key={s} value={s}>{s==="Todos"?"Todos":STATUS_LABEL[s]}</option>)}
-              </select>
-            </div>
-
-            <button className="px-4 py-2 rounded-xl bg-[#0e3a6d] text-white shadow" onClick={()=>onFilter({ txt, bloco, status })}>Aplicar</button>
-            <button className="px-4 py-2 rounded-xl border" onClick={()=>{ setTxt(""); setBloco("Todos"); setStatus("Todos"); onFilter({ txt:"", bloco:"Todos", status:"Todos"}); }}>Limpar</button>
-
-            <div className="flex items-center gap-2 ml-4">
-              <label className="text-[12px] text-slate-600">Zoom</label>
-              <input type="range" min={25} max={200} value={zoom} onChange={e=>setZoom(Number(e.target.value))} />
-              <span className="text-[12px] text-slate-600">{zoom}%</span>
-            </div>
-
-            <label className="flex items-center gap-2 ml-2 text-[12px] text-slate-600">
-              <input type="checkbox" checked={compact} onChange={e=>setCompact(e.target.checked)} /> Modo compacto
-            </label>
+          <div>
+            <label className="block text-[11px] text-slate-600 mb-1">Carregar CSV</label>
+            <input type="file" accept=".csv" onChange={e=> e.target.files?.[0] && parse(e.target.files[0])}
+              className="block w-full text-[12px] file:mr-3 file:px-3 file:py-1.5 file:rounded-lg file:border-0 file:bg-[#0e3a6d] file:text-white file:cursor-pointer" />
+            <p className="text-[11px] text-slate-500 mt-1">Aceita export do MS Project/ProjectLibre. Cabeçalho típico: <i>ID, Name, Start, Finish, PercentComplete, Notes...</i></p>
+            {err && <div className="mt-2 text-[11px] text-red-700">{err}</div>}
           </div>
         );
       }
 
-      function MonthHeader({ spanDays }){
+      function MonthHeader({ spanDays, start, end }){
         const months = [];
-        let cursor = new Date(WINDOW_START); cursor.setDate(1);
-        while (cursor <= WINDOW_END){
+        let cursor = new Date(start); cursor.setDate(1);
+        while (cursor <= end){
           const mStart = new Date(cursor);
           const mEnd = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0);
-          const start = Math.max(mStart, WINDOW_START);
-          const end = Math.min(mEnd, WINDOW_END);
-          const width = ((end - start)/MS)/spanDays * 100;
+          const s = Math.max(mStart, start);
+          const e = Math.min(mEnd, end);
+          const width = ((e - s)/MS)/spanDays * 100;
           months.push({ key: `${cursor.getFullYear()}-${cursor.getMonth()}`, label: mStart.toLocaleDateString("pt-BR",{ month:"short", year:"2-digit"}), width });
           cursor = new Date(cursor.getFullYear(), cursor.getMonth()+1, 1);
         }
         return (
           <div className="flex w-full select-none sticky top-0 z-10" style={{gap:2, background: COLORS.card, borderBottom: `1px solid ${COLORS.border}`}}>
             {months.map(m => (
-              <div key={m.key} className="text-[11px] uppercase tracking-wide text-slate-600 text-center" style={{width:`${m.width}%`}}>{m.label}</div>
+              <div key={m.key} className="text-[10px] uppercase tracking-wide text-slate-600 text-center" style={{width:`${m.width}%`}}>{m.label}</div>
             ))}
           </div>
         );
@@ -301,9 +169,9 @@
         const pv = totalDays? Math.round(w/totalDays): 0;
         const overdueCount = tasks.filter(t => (new Date(t.fim) < TODAY) && (t.pct??0) < 100).length;
         return (
-          <div className="flex items-center justify-between px-3 py-2 bg-slate-50 border-b" style={{borderColor: COLORS.border}}>
-            <div className="font-semibold">{title}</div>
-            <div className="flex items-center gap-3 text-[12px] text-slate-600">
+          <div className="flex items-center justify-between px-3 py-1.5 bg-slate-50 border-b" style={{borderColor: COLORS.border}}>
+            <div className="font-medium text-[12px]">{title}</div>
+            <div className="flex items-center gap-2 text-[11px] text-slate-600">
               <span>Tarefas: <b>{tasks.length}</b></span>
               <span>Progresso (pond.): <b>{pv}%</b></span>
               <span className="px-2 py-0.5 rounded-full" style={{background: overdueCount?"#fee2e2":"#e2e8f0", color: overdueCount?"#991b1b":"#334155"}}>Atraso: {overdueCount}</span>
@@ -312,153 +180,222 @@
         );
       }
 
-      // Coluna esquerda agora começa com o ID (pedido do Renato)
+      // Badge de ID: visual mais leve (sem negrito exagerado)
+      function IdBadge({ id }){
+        return (
+          <span className="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white text-slate-700 px-2 py-0.5 font-normal leading-none tracking-tight" style={{minWidth:28}}>
+            {id}
+          </span>
+        );
+      }
+
       function TaskLeft({ t }){
         const s = statusFrom(t);
         const chipBg = { inprog:"#ebf3ff", wait:"#fff7e6", hold:"#f3e8ff", overdue:"#fee2e2", done:"#e6f7ec" }[s.k] || "#ebf3ff";
         const chipTx = { inprog:"#1e3a8a", wait:"#92400e", hold:"#6b21a8", overdue:"#991b1b", done:"#166534" }[s.k] || "#1e3a8a";
         return (
-          <div className="pr-4 flex items-start gap-3">
-            <span className="inline-flex items-center justify-center rounded-lg px-2 py-1 text-xs font-semibold" style={{background:"#111827", color:"#fff", minWidth:36}}>
-              {t.id}
-            </span>
+          <div className="pr-3 flex items-start gap-2">
+            <IdBadge id={t.id} />
             <div>
-              <div className="text-[12px] text-slate-500">{t.bloco}</div>
-              <div className="font-medium flex items-center gap-2">
+              <div className="text-[11px] text-slate-500">{t.bloco}</div>
+              <div className="text-[12px] font-medium flex items-center gap-2">
                 {t.nome}
-                <span className="px-2 py-0.5 rounded-full text-[11px]" style={{background: chipBg, color: chipTx}}>{s.label}</span>
+                <span className="px-1.5 py-0.5 rounded-full text-[10px]" style={{background: chipBg, color: chipTx}}>{s.label}</span>
               </div>
-              {t.obs && <div className="text-[12px] italic mt-1 text-slate-600">{t.obs}</div>}
+              {t.obs && <div className="text-[11px] italic mt-0.5 text-slate-600">{t.obs}</div>}
             </div>
           </div>
         );
       }
 
-      function GanttBar({ task, spanDays, compact }){
-        const start = d(task.inicio), end = d(task.fim);
-        const left = clamp(((start - WINDOW_START)/MS)/spanDays * 100, -5, 105);
-        const width = clamp(((end - start)/MS)/spanDays * 100, 0.2, 120);
+      function GanttBar({ task, spanDays, compact, start, end }){
+        const a = d(task.inicio), b = d(task.fim);
+        const left = clamp(((a - start)/MS)/spanDays * 100, -5, 105);
+        const width = clamp(((b - a)/MS)/spanDays * 100, 0.2, 120);
         const pc = clamp(task.pct ?? 0, 0, 100);
         const color = barColor(task);
-        const todayLeft = clamp(((TODAY - WINDOW_START)/MS)/spanDays * 100, -5, 105);
-        const overdue = (TODAY > end) && pc < 100;
-        const h = compact ? 22 : 28;
+        const todayLeft = clamp(((TODAY - start)/MS)/spanDays * 100, -5, 105);
+        const overdue = (TODAY > b) && pc < 100;
+        const h = compact ? 18 : 22;
 
         return (
           <div className="group relative w-full">
             <div className="absolute" style={{left: `${todayLeft}%`, top: 0, bottom: 0}}>
               <div style={{width:2, background:"#11182722", height:"100%"}} />
             </div>
-            <div className="relative rounded-xl shadow-sm" style={{
-              position:"relative", left:`${left}%`, width:`${width}%`, background: color, height:h,
-              outline: overdue ? `2px solid ${COLORS.risk}` : "none",
-            }}>
-              <div style={{ width: `${pc}%`, background: "#00000022", height: "100%", borderRadius: 12 }} />
-              <div className="absolute inset-0 flex items-center px-3 text-white text-[12px] font-medium drop-shadow">
+            <div className="relative rounded-lg shadow-sm" style={{ position:"relative", left:`${left}%`, width:`${width}%`, background: color, height:h, outline: overdue ? `2px solid ${COLORS.risk}` : "none" }}>
+              <div style={{ width: `${pc}%`, background: "#00000022", height: "100%", borderRadius: 8 }} />
+              <div className="absolute inset-0 flex items-center px-2 text-white text-[11px] font-medium drop-shadow">
                 <span className="truncate">{task.nome}</span>
-                <span className="ml-2 opacity-80">• {pc}%</span>
+                <span className="ml-1 opacity-80">• {pc}%</span>
               </div>
             </div>
-            <div className="mt-1 text-[11px] text-slate-600 flex flex-wrap items-center gap-2">
-              <span>{fmt(start)} → {fmt(end)}</span>
+            <div className="mt-0.5 text-[10px] text-slate-600 flex flex-wrap items-center gap-2">
+              <span>{fmt(a)} → {fmt(b)}</span>
               {task.obs && <span className="italic">· {task.obs}</span>}
-              {overdue && <span className="px-2 py-0.5 rounded-full text-white" style={{background: COLORS.risk}}>{daysBetween(end, TODAY)}d em atraso</span>}
+              {overdue && <span className="px-1.5 py-0.5 rounded-full text-white" style={{background: COLORS.risk}}>{daysBetween(b, TODAY)}d em atraso</span>}
             </div>
           </div>
         );
       }
 
       function App(){
-        const [filter, setFilter] = useState({ txt:"", bloco:"Todos", status:"Todos" });
+        const [data, setData] = useState({ header: [], items: [] });
+        const [onlyEnergyB1, setOnlyEnergyB1] = useState(true);
         const [zoom, setZoom] = useState(100);
-        const [compact, setCompact] = useState(false);
+        const [compact, setCompact] = useState(true);
+        const [orderBy, setOrderBy] = useState('inicio'); // define ordem para renumeração
 
-        const spanDaysBase = Math.max(1, Math.round((WINDOW_END - WINDOW_START) / MS));
+        // Janela calculada a partir do CSV
+        const [win, setWin] = useState({ start: DEFAULT_START, end: DEFAULT_END });
+        useEffect(()=>{
+          if (!data.items.length){ setWin({ start: DEFAULT_START, end: DEFAULT_END }); return; }
+          const s = new Date(Math.min(...data.items.map(x=>d(x.inicio).getTime()).filter(x=>!isNaN(x))));
+          const e = new Date(Math.max(...data.items.map(x=>d(x.fim).getTime()).filter(x=>!isNaN(x))));
+          setWin({ start: isFinite(s) && !isNaN(s)? s : DEFAULT_START, end: isFinite(e) && !isNaN(e)? e : DEFAULT_END });
+        }, [data]);
+
+        // 1) Constrói tasks base a partir do CSV
+        const baseTasks = useMemo(()=> data.items.map((x,idx)=>({ id: idx, bloco: x.bloco||'Todos', nome: x.nome, inicio: x.inicio, fim: x.fim, pct: x.pct||0, obs: x.obs||'' })), [data]);
+
+        // 2) Aplica regra opcional do Bloco 1
+        const filtered = useMemo(()=> baseTasks.filter(t => !onlyEnergyB1 || t.bloco !== 'Bloco 1' || isEnergyB1(t)), [baseTasks, onlyEnergyB1]);
+
+        // 3) Ordena e RENUMERA IDs sempre em ordem crescente
+        const tasks = useMemo(()=> {
+          const sorted = [...filtered].sort((a,b)=>{
+            if (orderBy==='nome') return a.nome.localeCompare(b.nome, 'pt-BR');
+            // default: início, depois nome
+            const da = d(a.inicio)-d(b.inicio);
+            return da!==0 ? da : a.nome.localeCompare(b.nome, 'pt-BR');
+          });
+          return sorted.map((t, idx)=>({ ...t, id: idx }));
+        }, [filtered, orderBy]);
+
+        const spanDaysBase = Math.max(1, Math.round((win.end - win.start) / MS));
         const spanDays = Math.round(spanDaysBase / (zoom / 100));
-
-        const filtered = useMemo(() => {
-          const q = filter.txt.trim().toLowerCase();
-          return tasks.filter(t => {
-            const blocook = filter.bloco === "Todos" || t.bloco === filter.bloco;
-            const textok = !q || (t.nome.toLowerCase().includes(q) || (t.obs||"").toLowerCase().includes(q));
-            const s = statusFrom(t).k;
-            const statusok = filter.status === "Todos" || s === filter.status;
-            return blocook && textok && statusok;
-          }).sort((a,b)=> d(a.inicio) - d(b.inicio));
-        }, [filter]);
 
         const groups = useMemo(() => {
           const map = new Map();
-          filtered.forEach(t => {
+          tasks.forEach(t => {
             if (!map.has(t.bloco)) map.set(t.bloco, []);
             map.get(t.bloco).push(t);
           });
-          // manter ordem fixa de blocos
-          const order = ["Bloco 1","Bloco 2","Bloco 3","Embasamento"];
+          const order = ["Bloco 1","Bloco 2","Bloco 3","Embasamento","Todos"]; // macro no fim
           return order.filter(k=>map.has(k)).map(k=>[k,map.get(k)]);
-        }, [filtered]);
+        }, [tasks]);
 
         const progressoGeral = useMemo(() => {
+          if (!tasks.length) return 0;
           const arr = tasks.map(t => ({ days: Math.max(1, Math.round((d(t.fim)-d(t.inicio))/MS)), pct: clamp(t.pct??0,0,100) }));
           const totalDays = arr.reduce((s,x)=>s+x.days,0);
           const w = arr.reduce((s,x)=>s + x.days * x.pct, 0);
           return Math.round(w/totalDays);
-        }, []);
+        }, [tasks]);
 
         return (
           <div className="min-h-screen" style={{background: COLORS.bg, color: COLORS.text}}>
-            <div className="max-w-7xl mx-auto px-4 py-6">
-              <header className="flex flex-wrap items-center justify-between gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                  <LogoImage size={48} />
+            <div className="max-w-7xl mx-auto px-3 py-4">
+              <header className="flex flex-wrap items-center justify-between gap-3 mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded bg-[#0e3a6d]"/>
                   <div>
-                    <h1 className="text-2xl font-extrabold">Atlântico Golf — Cronograma (11/Set)</h1>
-                    <p className="text-slate-600">Janela: {fmt(WINDOW_START)} → {fmt(WINDOW_END)} · Progresso médio ponderado: <b>{progressoGeral}%</b></p>
+                    <h1 className="text-lg font-extrabold">Atlântico Golf — Cronograma (CSV)</h1>
+                    <p className="text-slate-600 text-[11px]">Janela: {fmt(win.start)} → {fmt(win.end)} · Progresso médio ponderado: <b>{progressoGeral}%</b></p>
                   </div>
                 </div>
                 <div className="flex flex-col items-end">
                   <Legend />
-                  <div className="text-[12px] text-slate-600 mt-1">Linha vertical indica <b>hoje</b>: {fmt(TODAY)}</div>
+                  <div className="text-[11px] text-slate-600 mt-1">Linha vertical indica <b>hoje</b>: {fmt(TODAY)}</div>
                 </div>
               </header>
 
-              <section className="mb-4">
-                <Filters onFilter={setFilter} zoom={zoom} setZoom={setZoom} compact={compact} setCompact={setCompact}/>
-              </section>
-
-              <section className="rounded-2xl shadow-xl border overflow-hidden" style={{background: COLORS.card, borderColor: COLORS.border}}>
-                <MonthHeader spanDays={spanDays} />
-                {groups.map(([bloco, itens]) => (
-                  <div key={bloco} className="border-b" style={{borderColor: COLORS.border}}>
-                    <GroupHeader title={bloco} tasks={itens} />
-                    <div className="divide-y" style={{borderColor: COLORS.border}}>
-                      {itens.map(t => (
-                        <div key={t.id} className="p-3 grid" style={{gridTemplateColumns: '80px 280px 1fr'}}>
-                          <div className="flex items-start"><span className="inline-flex items-center justify-center rounded-lg px-2 py-1 text-xs font-semibold" style={{background:"#111827", color:"#fff", minWidth:36}}>{t.id}</span></div>
-                          <TaskLeft t={t} />
-                          <GanttBar task={t} spanDays={spanDays} compact={compact} />
-                        </div>
-                      ))}
-                    </div>
+              <section className="mb-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-xl border p-3 bg-white" style={{borderColor: COLORS.border}}>
+                  <DropCSV onData={setData} />
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <label className="flex items-center gap-2 text-[11px] text-slate-700">
+                      <input type="checkbox" checked={onlyEnergyB1} onChange={e=>setOnlyEnergyB1(e.target.checked)} /> Bloco 1: apenas Entrada de Energia
+                    </label>
+                    <label className="flex items-center gap-2 text-[11px] text-slate-700">
+                      Ordenar por
+                      <select className="px-2 py-1 rounded border" value={orderBy} onChange={e=>setOrderBy(e.target.value)}>
+                        <option value="inicio">Início</option>
+                        <option value="nome">Nome</option>
+                      </select>
+                      (IDs são reindexados após a ordenação)
+                    </label>
                   </div>
-                ))}
+                </div>
+
+                <div className="rounded-xl border p-3 bg-white" style={{borderColor: COLORS.border}}>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="flex items-center gap-2 text-[11px] text-slate-700">
+                      Zoom
+                      <input type="range" min={25} max={200} value={zoom} onChange={e=>setZoom(Number(e.target.value))} />
+                      <span>{zoom}%</span>
+                    </label>
+                    <label className="flex items-center gap-2 text-[11px] text-slate-700">
+                      <input type="checkbox" checked={compact} onChange={e=>setCompact(e.target.checked)} /> Modo compacto
+                    </label>
+                    <a href="#" className="text-[11px] underline" onClick={(e)=>{ e.preventDefault();
+                      // exporta CSV normalizado
+                      const header = ['ID','Bloco','Tarefa','Início','Término','Percentual','Status','Observação'];
+                      const rows = tasks.map(t=>{
+                        const s = statusFrom(t);
+                        return [t.id, t.bloco, t.nome, t.inicio, t.fim, t.pct, s.label, t.obs||''];
+                      });
+                      const csv = [header, ...rows].map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+                      const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a'); a.href=url; a.download='cronograma-normalizado.csv'; a.click(); URL.revokeObjectURL(url);
+                    }}>Baixar CSV normalizado</a>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-2">IDs sempre sequenciais em ordem crescente após filtros/ordenação.</p>
+                </div>
               </section>
 
-              <section className="mt-6">
-                <details className="rounded-xl border p-4 bg-white">
-                  <summary className="cursor-pointer font-semibold">Ver tabela (dados brutos)</summary>
-                  <div className="overflow-x-auto mt-3">
-                    <table className="min-w-full text-sm">
+              <section className="rounded-xl shadow border overflow-hidden" style={{background: COLORS.card, borderColor: COLORS.border}}>
+                <MonthHeader spanDays={Math.max(1, Math.round((win.end - win.start)/MS)/(zoom/100))} start={win.start} end={win.end} />
+                {tasks.length===0 ? (
+                  <div className="p-6 text-slate-500">Nenhum dado carregado. Importe um CSV para visualizar o cronograma.</div>
+                ) : (
+                  ["Bloco 1","Bloco 2","Bloco 3","Embasamento","Todos"].map(gr => {
+                    const itens = tasks.filter(t=>t.bloco===gr);
+                    if (!itens.length) return null;
+                    return (
+                      <div key={gr} className="border-b" style={{borderColor: COLORS.border}}>
+                        <GroupHeader title={gr} tasks={itens} />
+                        <div className="divide-y" style={{borderColor: COLORS.border}}>
+                          {itens.map(t => (
+                            <div key={t.id} className="p-2 grid" style={{gridTemplateColumns: '62px 260px 1fr'}}>
+                              <div className="flex items-start"><IdBadge id={t.id} /></div>
+                              <TaskLeft t={t} />
+                              <GanttBar task={t} spanDays={Math.max(1, Math.round((win.end - win.start)/MS)/(zoom/100))} compact={compact} start={win.start} end={win.end} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </section>
+
+              <section className="mt-5">
+                <details className="rounded-xl border p-3 bg-white">
+                  <summary className="cursor-pointer font-medium text-[12px]">Ver tabela (dados brutos)</summary>
+                  <div className="overflow-x-auto mt-2">
+                    <table className="min-w-full text-[12px]">
                       <thead>
                         <tr className="text-left border-b">
-                          <th className="py-2 pr-4">ID</th>
-                          <th className="py-2 pr-4">Bloco</th>
-                          <th className="py-2 pr-4">Tarefa</th>
-                          <th className="py-2 pr-4">Início</th>
-                          <th className="py-2 pr-4">Término</th>
-                          <th className="py-2 pr-4">% Concl.</th>
-                          <th className="py-2 pr-4">Status</th>
-                          <th className="py-2 pr-4">Observação</th>
+                          <th className="py-1.5 pr-3">ID</th>
+                          <th className="py-1.5 pr-3">Bloco</th>
+                          <th className="py-1.5 pr-3">Tarefa</th>
+                          <th className="py-1.5 pr-3">Início</th>
+                          <th className="py-1.5 pr-3">Término</th>
+                          <th className="py-1.5 pr-3">% Concl.</th>
+                          <th className="py-1.5 pr-3">Status</th>
+                          <th className="py-1.5 pr-3">Observação</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -466,14 +403,14 @@
                           const s = statusFrom(t);
                           return (
                             <tr key={`tb-${t.id}`} className="border-b last:border-0">
-                              <td className="py-1 pr-4">{t.id}</td>
-                              <td className="py-1 pr-4">{t.bloco}</td>
-                              <td className="py-1 pr-4">{t.nome}</td>
-                              <td className="py-1 pr-4">{t.inicio}</td>
-                              <td className="py-1 pr-4">{t.fim}</td>
-                              <td className="py-1 pr-4">{t.pct}%</td>
-                              <td className="py-1 pr-4">{s.label}</td>
-                              <td className="py-1 pr-4">{t.obs||""}</td>
+                              <td className="py-1 pr-3">{t.id}</td>
+                              <td className="py-1 pr-3">{t.bloco}</td>
+                              <td className="py-1 pr-3">{t.nome}</td>
+                              <td className="py-1 pr-3">{t.inicio}</td>
+                              <td className="py-1 pr-3">{t.fim}</td>
+                              <td className="py-1 pr-3">{t.pct}%</td>
+                              <td className="py-1 pr-3">{s.label}</td>
+                              <td className="py-1 pr-3">{t.obs||""}</td>
                             </tr>
                           );
                         })}
@@ -483,9 +420,9 @@
                 </details>
               </section>
 
-              <footer className="mt-8 text-[12px] text-slate-500">
-                <div>• Para exibir um logo, adicione <b>logo.jpg</b> (ou <code>logo.png</code>/<code>logo.svg</code>) na raiz do repo (ou em <code>/assets</code>).</div>
-                <div>• Publicação: GitHub Pages (arquivo <b>index.html</b> na raiz ou em <code>/docs</code>).</div>
+              <footer className="mt-6 text-[11px] text-slate-500">
+                <div>• Suba um <b>CSV</b> exportado do Project. As colunas são detectadas automaticamente.</div>
+                <div>• IDs são <b>sempre</b> renumerados (0..N-1) após filtros/ordem escolhida. Visual do ID foi suavizado (chip leve, sem negrito exagerado).</div>
               </footer>
             </div>
           </div>
