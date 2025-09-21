@@ -1,258 +1,529 @@
-# Read the user's spreadsheet to infer a services structure, then synthesize a realistic JSON schedule
-import pandas as pd
-import json
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-import os
-
-xlsx_path = "/mnt/data/20 - Orygem BLOCO 3 - Planilha de medição - 2ª quinz. JUN.24.xlsx"
-
-# Try to read the first sheet and infer service names / structure
-services_from_sheet = []
-try:
-    xl = pd.ExcelFile(xlsx_path)
-    df0 = xl.parse(xl.sheet_names[0])
-    # Try common column names that might contain service descriptions
-    possible_cols = [c for c in df0.columns if any(k in str(c).lower() for k in ["serv", "descr", "item", "etapa", "insumo", "atividade"])]
-    if not possible_cols:
-        possible_cols = list(df0.columns[:2])
-    # Collect unique non-empty strings
-    raw = []
-    for c in possible_cols:
-        raw.extend([str(x).strip() for x in df0[c].dropna().astype(str).tolist()])
-    # Filter out headers/footers
-    for r in raw:
-        if len(r) < 3: 
-            continue
-        if any(k in r.lower() for k in ["planilha", "medição", "total", "subtotal", "quinz", "data", "contrato", "cliente", "endereço", "bloco", "unidade", "observa"]):
-            continue
-        services_from_sheet.append(r)
-    # Deduplicate preserving order
-    seen = set()
-    services_from_sheet = [x for x in services_from_sheet if not (x in seen or seen.add(x))]
-except Exception as e:
-    services_from_sheet = []
-
-# Build a curated list of installation services based on the sheet (fallback to known structure)
-fallback_services = [
-    "Mobilização de canteiro",
-    "Infraestrutura elétrica (eletrocalhas, eletrodutos)",
-    "Quadros/QDLs - fornecimento",
-    "Quadros/QDLs - instalação/fechamento",
-    "SPDA (captação/descidas/aterramento)",
-    "Barramentos blindados - fornecimento",
-    "Barramentos blindados - montagem",
-    "Cofres/PDMD - instalação",
-    "Alimentadores principais - lançamento",
-    "Alimentadores principais - fechamento",
-    "Painéis padrão concessionária (Light) - fornecimento",
-    "Painéis padrão concessionária (Light) - instalação",
-    "Medição remota - infraestrutura",
-    "Medição remota - configuração",
-    "Luminárias áreas comuns - instalação",
-    "Tomadas/interruptores áreas comuns",
-    "Teste de continuidade/isolamento",
-    "Comissionamento e start-up",
-    "As built e entrega para qualidade",
-]
-
-# Try to extract service-like lines from the sheet and map/clean them
-def normalize_service(s):
-    s = s.strip()
-    # Map some common patterns to our controlled vocabulary
-    lower = s.lower()
-    mapping = [
-        ("qdl", "Quadros/QDLs - instalação/fechamento"),
-        ("quadro", "Quadros/QDLs - instalação/fechamento"),
-        ("spda", "SPDA (captação/descidas/aterramento)"),
-        ("barrament", "Barramentos blindados - montagem"),
-        ("busway", "Barramentos blindados - montagem"),
-        ("pdmd", "Cofres/PDMD - instalação"),
-        ("cofre", "Cofres/PDMD - instalação"),
-        ("alimentador", "Alimentadores principais - lançamento"),
-        ("light", "Painéis padrão concessionária (Light) - instalação"),
-        ("medição remota", "Medição remota - infraestrutura"),
-        ("lumin", "Luminárias áreas comuns - instalação"),
-        ("tomada", "Tomadas/interruptores áreas comuns"),
-        ("interruptor", "Tomadas/interruptores áreas comuns"),
-        ("comission", "Comissionamento e start-up"),
-        ("teste", "Teste de continuidade/isolamento"),
-        ("as built", "As built e entrega para qualidade"),
-    ]
-    for key, val in mapping:
-        if key in lower:
-            return val
-    # Keep non-mapped but reasonable lines
-    if len(s) > 5 and not any(k in lower for k in ["total", "subtotal"]):
-        return s
-    return None
-
-normalized = [normalize_service(s) for s in services_from_sheet]
-normalized = [x for x in normalized if x]
-
-# Merge and deduplicate with fallback
-services = []
-seen = set()
-for s in normalized + fallback_services:
-    if s not in seen:
-        seen.add(s)
-        services.append(s)
-
-# Define purchase items tied to some services with lead times
-purchase_leads = {
-    "Quadros/QDLs - instalação/fechamento": ("Compra de QDLs", 60),
-    "Barramentos blindados - montagem": ("Compra de barramentos blindados", 75),
-    "Cofres/PDMD - instalação": ("Compra de cofres/PDMD", 45),
-    "Alimentadores principais - lançamento": ("Compra de cabos alimentadores", 45),
-    "Painéis padrão concessionária (Light) - instalação": ("Compra de painéis padrão concessionária", 90),
-    "Luminárias áreas comuns - instalação": ("Compra de luminárias", 60),
-    "Tomadas/interruptores áreas comuns": ("Compra de dispositivos (T/I)", 45),
-    "Medição remota - infraestrutura": ("Compra de kits de medição remota", 60),
-}
-
-# Base durations (days) per service, approximate
-base_durations = {
-    "Mobilização de canteiro": 30,
-    "Infraestrutura elétrica (eletrocalhas, eletrodutos)": 120,
-    "Quadros/QDLs - fornecimento": 1,  # marker
-    "Quadros/QDLs - instalação/fechamento": 45,
-    "SPDA (captação/descidas/aterramento)": 60,
-    "Barramentos blindados - fornecimento": 1,
-    "Barramentos blindados - montagem": 75,
-    "Cofres/PDMD - instalação": 25,
-    "Alimentadores principais - lançamento": 40,
-    "Alimentadores principais - fechamento": 15,
-    "Painéis padrão concessionária (Light) - fornecimento": 1,
-    "Painéis padrão concessionária (Light) - instalação": 20,
-    "Medição remota - infraestrutura": 20,
-    "Medição remota - configuração": 10,
-    "Luminárias áreas comuns - instalação": 30,
-    "Tomadas/interruptores áreas comuns": 25,
-    "Teste de continuidade/isolamento": 10,
-    "Comissionamento e start-up": 20,
-    "As built e entrega para qualidade": 15,
-}
-
-# Projects and blocks
-projects = [
-    {"key": "woods", "name": "Woods Park Design by EDSA", "start": datetime(2026,1,15)},
-    {"key": "ox", "name": "Ox Park Design by EDSA", "start": datetime(2026,7,15)},  # +6 months
-]
-blocks = ["Bloco A","Bloco B","Bloco C","Bloco D"]
-
-# Stagger blocks within each project by 2 months each
-block_offsets = {
-    "Bloco A": relativedelta(months=0),
-    "Bloco B": relativedelta(months=2),
-    "Bloco C": relativedelta(months=4),
-    "Bloco D": relativedelta(months=6),
-}
-
-# Build tasks
-tasks = []
-meta = {
-    "title": "Cronograma de Instalações — WOODS & OX Park (simulado)",
-    "created_at": datetime.now().strftime("%Y-%m-%d"),
-    "assumptions": {
-        "floors": {"range": "Térreo ao 6º", "unidades_por_andar": {"1º-5º": 6, "6º (coberturas)": 2}},
-        "blocks_por_projeto": 4,
-        "projects": ["Woods Park Design by EDSA","Ox Park Design by EDSA"],
-        "stagger_between_projects_months": 6,
-        "stagger_between_blocks_months": 2,
-        "deadline": "2028-12-20",
-        "services_source": "planilha do usuário (primeira aba) + complementação de boas práticas",
-    }
-}
-
-# Helper to clamp end date to deadline
-deadline = datetime(2028,12,20)
-
-# Create ids sequential
-next_id = 0
-
-def add_task(container, project, block, name, start_dt, duration_days, predecessors=None, typ="exec", notes=""):
-    global next_id
-    end_dt = start_dt + timedelta(days=duration_days)
-    if end_dt > deadline:
-        end_dt = deadline
-    t = {
-        "id": next_id,
-        "project": project["name"],
-        "block": block,
-        "name": name,
-        "type": typ,
-        "start": start_dt.strftime("%Y-%m-%d"),
-        "finish": end_dt.strftime("%Y-%m-%d"),
-        "duration_days": (end_dt - start_dt).days,
-        "pct": 0,
-        "predecessors": predecessors or [],
-        "notes": notes
-    }
-    container.append(t)
-    next_id += 1
-    return t["id"], end_dt
-
-for proj in projects:
-    for block in blocks:
-        # baseline start for the block
-        block_start = proj["start"] + block_offsets[block]
-        prev_ids = []
-        finishes = {}
-        # Build purchase + execution pairs where applicable and a sensible sequence
-        sequence = [
-            "Mobilização de canteiro",
-            "SPDA (captação/descidas/aterramento)",
-            "Infraestrutura elétrica (eletrocalhas, eletrodutos)",
-            "Barramentos blindados - montagem",
-            "Cofres/PDMD - instalação",
-            "Quadros/QDLs - instalação/fechamento",
-            "Alimentadores principais - lançamento",
-            "Alimentadores principais - fechamento",
-            "Painéis padrão concessionária (Light) - instalação",
-            "Medição remota - infraestrutura",
-            "Medição remota - configuração",
-            "Luminárias áreas comuns - instalação",
-            "Tomadas/interruptores áreas comuns",
-            "Teste de continuidade/isolamento",
-            "Comissionamento e start-up",
-            "As built e entrega para qualidade",
+{
+  "current": "hidraulica",
+  "quadros": {
+    "eletrica": {
+      "nome": "Equipe Elétrica",
+      "blocos": {
+        "Bloco 1": [
+          [
+            "nv",
+            "nv",
+            "xx",
+            "xx"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ]
+        ],
+        "Bloco 2": [
+          [
+            "nv",
+            "nv",
+            "xx",
+            "xx"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ]
         ]
-        current_start = block_start
-        for svc in sequence:
-            dur = base_durations.get(svc, 20)
-            # handle purchase
-            if svc in purchase_leads:
-                purchase_name, lead = purchase_leads[svc]
-                purchase_start = max(block_start, current_start - timedelta(days=lead))
-                # Purchase with finish just before service start
-                pid, _ = add_task(tasks, proj, block, purchase_name, purchase_start, max(10, int(lead*0.6)), predecessors=[], typ="compra", notes="Lead time estimado")
-                prev_for_exec = prev_ids + [pid]
-            else:
-                prev_for_exec = prev_ids.copy()
-            # Execution task
-            tid, finish_dt = add_task(tasks, proj, block, svc, current_start, dur, predecessors=prev_for_exec, typ="exec")
-            finishes[svc] = finish_dt
-            prev_ids.append(tid)
-            # next starts the day after finish of this task
-            current_start = finish_dt + timedelta(days=1)
-
-# Ensure finish not beyond deadline; if any block finishes too early to meet realistic end, it's fine.
-
-# Compose JSON structure
-output = {
-    "meta": meta,
-    "projects": [{"key": p["key"], "name": p["name"]} for p in projects],
-    "blocks": blocks,
-    "tasks": tasks
-}
-
-out_path = "/mnt/data/cronograma_woods_ox.json"
-with open(out_path, "w", encoding="utf-8") as f:
-    json.dump(output, f, ensure_ascii=False, indent=2)
-
-# Show a preview dataframe of first 20 tasks
-preview = pd.DataFrame(tasks).head(20)
-from caas_jupyter_tools import display_dataframe_to_user
-display_dataframe_to_user("Prévia do cronograma (primeiras 20 linhas)", preview)
-
-out_path
+      },
+      "chamados": []
+    },
+    "hidraulica": {
+      "nome": "Equipe Hidráulica",
+      "blocos": {
+        "Bloco 1": [
+          [
+            "nv",
+            "nv",
+            "xx",
+            "xx"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "pl",
+            "pl",
+            "ok",
+            "ok"
+          ],
+          [
+            "pm",
+            "ok",
+            "ok",
+            "ok"
+          ]
+        ],
+        "Bloco 2": [
+          [
+            "nv",
+            "nv",
+            "xx",
+            "xx"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "nv",
+            "nv",
+            "nv"
+          ],
+          [
+            "nv",
+            "ok",
+            "ok",
+            "ok"
+          ],
+          [
+            "ok",
+            "ok",
+            "ok",
+            "ok"
+          ]
+        ]
+      },
+      "chamados": []
+    }
+  }
+            }
