@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Quadro Branco — Entregas (Elétrica / Hidráulica)</title>
-  <meta name="description" content="TV-ready. Dois quadros separados: Equipe Elétrica e Equipe Hidráulica. Cada quadro tem 2 blocos lado a lado. Clique alterna status, chamados por apto, exportar/importar JSON. Logo fixa." />
+  <meta name="description" content="TV-ready. Dois quadros separados: Equipe Elétrica e Equipe Hidráulica. Cada quadro tem 2 blocos lado a lado. Clique alterna status, chamados por apto, exportar JSON. Logo fixa. Sem import: atualização via GitHub." />
   <style>
     :root{
       --bg:#ffffff; --text:#0f172a; --muted:#475569; --line:#e2e8f0; --head:#f8fafc;
@@ -90,8 +90,6 @@
     </div>
     <div class="tools">
       <button id="btnExport">Baixar JSON</button>
-      <button class="ghost" id="btnImport">Carregar JSON</button>
-      <input type="file" id="fileInput" accept="application/json" hidden>
       <button class="ghost" id="btnZerar">Zerar quadro</button>
       <button class="ghost" id="btnNovoChamado">Novo chamado</button>
     </div>
@@ -222,7 +220,7 @@
             const d = document.createElement('div');
             d.className = `cell apto ${disabled? 'disabled' : st}`;
             d.title = disabled ? `Pav ${pav} • Inexistente` : `Apto ${num} • ${LABEL[st]}`;
-            d.innerHTML = `<span class="label">${disabled? '\u2014' : `${num} · ${LABEL[st]}`}</span>`;
+            d.innerHTML = `<span class=\"label\">${disabled? '\u2014' : `${num} · ${LABEL[st]}`}</span>`;
             if(!disabled){
               d.addEventListener('click', ()=>{
                 const cur = state.quadros[state.current].blocos[nome][i][a];
@@ -252,10 +250,10 @@
             const item = document.createElement('div'); item.className='ticket';
             const pav = (PAV - ch.pavIndex).toString().padStart(2,'0');
             const num = aptNumber(PAV - ch.pavIndex, ch.aptIndex);
-            item.innerHTML = `<span class="tid">${ch.id}</span>
-              <div class="ttext">
+            item.innerHTML = `<span class=\"tid\">${ch.id}</span>
+              <div class=\"ttext\">
                 <div><strong>Apto ${num}</strong> — ${escapeHTML(ch.texto||'')}</div>
-                <div class="tmeta">Pav ${pav} • Coluna ${(ch.aptIndex+1).toString().padStart(2,'0')}</div>
+                <div class=\"tmeta\">Pav ${pav} • Coluna ${(ch.aptIndex+1).toString().padStart(2,'0')}</div>
               </div>`;
             const del = document.createElement('button'); del.textContent='Excluir';
             del.addEventListener('click',()=>{ removerChamado(ch.id); });
@@ -290,20 +288,6 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href=url; a.download='code.json';
       document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-    });
-
-    const fileInput = document.getElementById('fileInput');
-    document.getElementById('btnImport').addEventListener('click', ()=>{ fileInput.value=''; fileInput.click(); });
-    fileInput.addEventListener('change', (ev)=>{
-      const file = ev.target.files && ev.target.files[0]; if(!file) return;
-      const fr = new FileReader();
-      fr.onload = ()=>{
-        try{
-          const obj = JSON.parse(String(fr.result||'{}'));
-          state = normalize(obj); save(); render();
-        }catch(e){ alert('JSON inválido'); }
-      };
-      fr.readAsText(file);
     });
 
     document.getElementById('btnZerar').addEventListener('click', ()=>{
@@ -352,6 +336,7 @@
   </script>
 </body>
 </html>
+
 
 
 
